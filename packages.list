@@ -62,6 +62,12 @@ ubiquity
 ubiquity-frontend-gtk
 ubiquity-slideshow-ubuntu
 ubiquity-casper
+gir1.2-webkit2-4.1
+dosfstools
+mtools
+ntfs-3g
+mdadm
+os-prober
 linux-generic
 linux-firmware
 intel-microcode
@@ -91,13 +97,11 @@ unattended-upgrades
 plymouth
 plymouth-theme-spinner
 
-# Impressão
+# Impressão (sem o configurador antigo; GNOME Configurações cobre)
 cups
 cups-browsed
-system-config-printer
 
 # Apps
-epiphany-browser
 libreoffice-writer
 libreoffice-calc
 libreoffice-impress

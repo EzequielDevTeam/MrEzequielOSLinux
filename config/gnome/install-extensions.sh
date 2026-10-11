@@ -10,7 +10,7 @@ EXT_DIR="/usr/share/gnome-shell/extensions"
 TMP="/tmp/mre-ext"
 mkdir -p "$EXT_DIR" "$TMP"
 cd "$TMP"
-UUIDS="dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com"
+UUIDS="dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com"
 
 install_ego() {
   uuid="$1"
@@ -78,6 +78,7 @@ for uuid in $UUIDS; do
     blur-my-shell*) git_blur ;;
     ding*) git_ding ;;
     appindicator*) git_appindicator ;;
+    *) echo "[ext] sem fallback git para $uuid"; return 1 ;;
   esac && echo "[ext] OK(git): $uuid" || echo "[ext] FALHOU: $uuid"
 done
 
