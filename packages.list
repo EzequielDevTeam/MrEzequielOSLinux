@@ -49,6 +49,7 @@ fonts-ubuntu
 fonts-noto-core
 fonts-inter
 dconf-editor
+dconf-cli
 zenity
 libnotify-bin
 locales

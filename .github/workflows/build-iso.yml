@@ -59,8 +59,16 @@ jobs:
           apt install -y $(cat /tmp/pkgs.txt)
           echo "=== [4/7] tema MrEzequielOS ==="
           /tmp/mre-config/apply-theme.sh
+          echo "=== [4b/7] verificacao tema/boot ==="
+          ls /usr/share/gnome-shell/extensions
+          which dconf && dconf update && echo DCONF-OK
+          dpkg -l | grep -E "plymouth-theme|dconf-cli" || true
+          apt purge -y plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text 2>/dev/null || true
+          plymouth-set-default-theme -R spinner
+          update-alternatives --query default.plymouth | grep -E "Value:" || true
           echo "=== [5/7] initramfs ==="
           update-initramfs -u -k all
+          lsinitramfs /boot/initrd.img-* 2>/dev/null | grep -i "plymouth.*\(spinner\|ubuntu-logo\)" | head -5 || true
           echo "=== [6/7] branding ==="
           echo "MrEzequielOS" > /etc/hostname
           cp /tmp/mre-config/branding/os-release /etc/os-release
@@ -106,6 +114,9 @@ jobs:
           insmod all_video
           insmod gfxterm
           insmod png
+          loadfont $prefix/fonts/unicode.pf2
+          set gfxmode=auto
+          terminal_output gfxterm
           background_image /boot/grub/splash.png
           set menu_color_normal=white/black
           set menu_color_highlight=black/white

@@ -47,6 +47,7 @@ apply_release() {
   echo "Reparando extensões..."
   "$TOP/config/gnome/install-extensions.sh" || echo "AVISO extensões"
   echo "Upgrade de pacotes Ubuntu..."
+  sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
   apt update && apt full-upgrade -y || { echo "apt falhou"; rm -rf "$TMPD"; return 1; }
   echo "$TAG" > "$VER_FILE"
   rm -rf "$TMPD"
@@ -83,6 +84,7 @@ fi
 if ! is_newer "$TAG"; then
   zenity --info --title="MrEzequielOS Update" --text="Seu sistema já está atualizado. Versão: <b>$CUR</b>." 2>/dev/null
   if zenity --question --title="MrEzequielOS Update" --text="Buscar atualizações de pacotes e apps do Ubuntu agora? (igual o Zorin faz no Software Updater)" 2>/dev/null; then
+    sudo sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
     sudo apt update && sudo apt full-upgrade -y
   fi
   rm -f "$FLAG"
