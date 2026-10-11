@@ -34,7 +34,7 @@ cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
 dconf update || true
 
 echo "[visual] Plymouth sem logo Ubuntu (spinner neutro)..."
-plymouth-set-default-theme -R spinner 2>/dev/null || echo "AVISO plymouth falhou"
+update-alternatives --set default.plymouth /usr/share/plymouth/themes/spinner/spinner.plymouth 2>/dev/null || echo "AVISO plymouth falhou"
 
 echo "[visual] Ferramentas MrEzequielOS (atualizador + segurança)..."
 chmod +x "$BASE/tools/"* 2>/dev/null || true
