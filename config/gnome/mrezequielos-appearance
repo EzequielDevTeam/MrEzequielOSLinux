@@ -26,7 +26,8 @@ apply_windows() {
   gsettings set org.gnome.shell disable-user-extensions false || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/panel-positions "'{\"0\":\"BOTTOM\"}'" || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/panel-sizes "'{\"0\":48}'" || true
-  dconf write /org/gnome/shell/extensions/dash-to-panel/show-show-apps-button false || true
+  dconf write /org/gnome/shell/extensions/dash-to-panel/trans-use-custom-opacity true || true
+  dconf write /org/gnome/shell/extensions/dash-to-panel/trans-panel-opacity 0.75 || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/isolate-workspaces true || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-layout "'Windows 11'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-position "'Left'" || true

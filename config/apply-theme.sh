@@ -62,10 +62,12 @@ chmod +x "$BASE/tools/"* 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
 cp "$BASE/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
 cp "$BASE/tools/mrezequielos-diagnostico" /usr/local/bin/mrezequielos-diagnostico
-chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico
+cp "$BASE/tools/mrezequielos-test-installer" /usr/local/bin/mrezequielos-test-installer
+chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico /usr/local/bin/mrezequielos-test-installer
 cp "$BASE/tools/mrezequielos-update.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-security.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-diagnostico.desktop" /usr/share/applications/ 2>/dev/null || true
+cp "$BASE/tools/mrezequielos-test-installer.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-appearance.desktop" /usr/share/applications/ 2>/dev/null || true
 mkdir -p /etc/xdg/autostart
 cp "$BASE/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true

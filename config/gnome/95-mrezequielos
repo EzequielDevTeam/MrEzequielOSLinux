@@ -31,9 +31,9 @@ disable-user-extensions=false
 [org/gnome/shell/extensions/dash-to-panel]
 panel-positions={'0': 'BOTTOM'}
 panel-sizes={'0': 48}
-show-show-apps-button=false
 show-apps-icon-side-padding=8
-translucent-panel=true
+trans-use-custom-opacity=true
+trans-panel-opacity=0.75
 isolate-workspaces=true
 isolate-monitors=true
 group-apps=true
