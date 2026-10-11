@@ -66,6 +66,7 @@ jobs:
           apt purge -y plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text 2>/dev/null || true
           apt install -y plymouth plymouth-theme-spinner 2>/dev/null || true
           for p in gdm3 gnome-shell plymouth; do dpkg -s $p >/dev/null 2>&1 || apt install -y $p; done
+          update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/spinner/spinner.plymouth 100 2>/dev/null || true
           update-alternatives --set default.plymouth /usr/share/plymouth/themes/spinner/spinner.plymouth || echo "AVISO plymouth"
           update-alternatives --query default.plymouth | grep -E "Value:" || true
           echo "=== [5/7] initramfs ==="
