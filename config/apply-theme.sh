@@ -40,11 +40,9 @@ echo "[visual] Ferramentas MrEzequielOS (atualizador + segurança)..."
 chmod +x "$BASE/tools/"* 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
 cp "$BASE/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
-cp "$BASE/tools/mrezequielos-dev" /usr/local/bin/mrezequielos-dev
-chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-dev
+chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security
 cp "$BASE/tools/mrezequielos-update.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-security.desktop" /usr/share/applications/ 2>/dev/null || true
-cp "$BASE/tools/mrezequielos-dev.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-appearance.desktop" /usr/share/applications/ 2>/dev/null || true
 mkdir -p /etc/xdg/autostart
 cp "$BASE/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true
