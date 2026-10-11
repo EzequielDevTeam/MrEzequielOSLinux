@@ -1,0 +1,18 @@
+<page xmlns="http://projectmallard.org/1.0/" type="topic" id="atualizacoes">
+<info>
+  <title>Atualizar sistema e aplicativos</title>
+  <desc>Três camadas de atualização, tudo sem apagar nada.</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Atualizações</title>
+<section id="sistema"><title>Versão do MrEzequielOS</title>
+<p>O app <app>Atualização do Sistema</app> avisa sozinho (notificação) quando sai
+versão nova. Um clique baixa e aplica interface, ferramentas e marca — seus
+arquivos e apps continuam intactos.</p>
+</section>
+<section id="apps"><title>Aplicativos e pacotes</title>
+<p>Abra a <app>Loja</app> para atualizar apps, ou <app>Software Updater</app>
+para pacotes do sistema — igual no Zorin OS. Atualizações de segurança
+importantes se instalam sozinhas.</p>
+</section>
+</page>

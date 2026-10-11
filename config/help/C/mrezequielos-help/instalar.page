@@ -1,0 +1,18 @@
+<page xmlns="http://projectmallard.org/1.0/" type="topic" id="instalar">
+<info>
+  <title>Instalar o MrEzequielOS</title>
+  <desc>Do modo teste para o HD em poucas etapas.</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Instalar o sistema</title>
+<p>No menu de boot escolha <em>Instalar o MrEzequielOS</em> (ou clique em
+<em>Instalar</em> na área de trabalho do modo teste) e siga as etapas:</p>
+<steps>
+  <item><p><em>Idioma</em> — escolha Português do Brasil (ou outro dos vários suportados).</p></item>
+  <item><p><em>País e fuso</em> — define hora e formato local.</p></item>
+  <item><p><em>Teclado</em> — ABNT2 para o Brasil.</p></item>
+  <item><p><em>Tipo de instalação</em> — apagar o disco ou instalar ao lado de outro sistema.</p></item>
+  <item><p><em>Login e senha</em> — seu nome, usuário e senha.</p></item>
+</steps>
+<p>No final, reinicie, retire o pendrive e entre no seu MrEzequielOS instalado.</p>
+</page>

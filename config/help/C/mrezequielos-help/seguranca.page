@@ -1,0 +1,17 @@
+<page xmlns="http://projectmallard.org/1.0/" type="topic" id="seguranca">
+<info>
+  <title>Segurança</title>
+  <desc>Firewall, updates automáticos e sistema endurecido.</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Segurança</title>
+<p>Abra o app <app>Segurança MrEzequielOS</app> para ativar tudo de uma vez:</p>
+<list>
+  <item><p><em>Firewall</em> — bloqueia conexões de entrada da rede.</p></item>
+  <item><p><em>Atualizações automáticas</em> — correções de segurança diárias, sem pedir nada.</p></item>
+  <item><p><em>Kernel endurecido</em> — proteções contra técnicas comuns de ataque.</p></item>
+  <item><p><em>Sem telemetria</em> — nada de relatório de erros para terceiros.</p></item>
+</list>
+<p>Como em todo Linux desktop atualizado vindo da Loja oficial, antivírus é
+dispensável para o uso comum — mas nunca instale .deb de fontes duvidosas.</p>
+</page>

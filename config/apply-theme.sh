@@ -52,6 +52,11 @@ cp "$BASE/tools/mrezequielos-update-check.timer" /etc/systemd/system/ 2>/dev/nul
 systemctl enable mrezequielos-update-check.timer 2>/dev/null || true
 echo "1.1" > /etc/mrezequielos-version
 
+echo "[visual] App de Ajuda próprio (tudo nosso, com créditos)..."
+mkdir -p /usr/share/help/C/mrezequielos-help
+cp "$BASE/help/C/mrezequielos-help/"*.page /usr/share/help/C/mrezequielos-help/ 2>/dev/null || true
+cp "$BASE/tools/mrezequielos-help.desktop" /usr/share/applications/ 2>/dev/null || true
+
 echo "[visual] App Appearance (trocar layout Windows/macOS)..."
 cp "$BASE/gnome/mrezequielos-appearance" /usr/local/bin/mrezequielos-appearance
 chmod +x /usr/local/bin/mrezequielos-appearance

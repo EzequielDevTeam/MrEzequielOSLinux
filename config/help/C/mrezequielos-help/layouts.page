@@ -1,0 +1,16 @@
+<page xmlns="http://projectmallard.org/1.0/" type="topic" id="layouts">
+<info>
+  <title>Trocar o layout da área de trabalho</title>
+  <desc>Use o app Appearance para mudar entre Windows, macOS e Ubuntu.</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Trocar o layout</title>
+<p>Abra o app <app>MrEzequielOS Appearance</app> (botão iniciar → Configurações)
+e escolha:</p>
+<list>
+  <item><p><em>Windows</em> — barra única embaixo com botão iniciar no canto, tarjas e relógio (padrão).</p></item>
+  <item><p><em>macOS</em> — barra em cima e dock embaixo.</p></item>
+  <item><p><em>Ubuntu</em> — barra lateral esquerda.</p></item>
+</list>
+<p>Depois de trocar, saia e entre de novo na sessão para recarregar as extensões.</p>
+</page>

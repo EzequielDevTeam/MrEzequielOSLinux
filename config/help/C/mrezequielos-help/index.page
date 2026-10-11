@@ -1,0 +1,23 @@
+<page xmlns="http://projectmallard.org/1.0/" type="guide" id="index">
+<info>
+  <title>Ajuda do MrEzequielOS</title>
+  <desc>Bem-vindo ao MrEzequielOS. Aprenda a usar, atualizar e proteger seu sistema.</desc>
+  <credit type="author"><name>Equipe MrEzequielOS</name></credit>
+  <license><p>Creative Commons Atribuição-CompartilhaIgual 4.0 (CC BY-SA 4.0).</p></license>
+</info>
+<title>Bem-vindo ao MrEzequielOS</title>
+<p>O MrEzequielOS é um sistema leve e bonito, baseado no <app>Ubuntu 24.04 LTS</app>,
+com interface GNOME no estilo Zorin OS: barra de tarefas embaixo, botão iniciar
+no canto e seus apps no meio.</p>
+<section id="usar" style="2column">
+  <title>Comece por aqui</title>
+  <list>
+    <item><p><link xref="layouts">Trocar o layout (Windows, macOS, Ubuntu)</link></p></item>
+    <item><p><link xref="instalar">Instalar o sistema no computador</link></p></item>
+    <item><p><link xref="atualizacoes">Atualizar sistema e aplicativos</link></p></item>
+    <item><p><link xref="idioma">Idioma e teclado</link></p></item>
+    <item><p><link xref="seguranca">Segurança</link></p></item>
+    <item><p><link xref="creditos">Créditos e base utilizada</link></p></item>
+  </list>
+</section>
+</page>

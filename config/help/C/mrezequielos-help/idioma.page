@@ -1,0 +1,12 @@
+<page xmlns="http://projectmallard.org/1.0/" type="topic" id="idioma">
+<info>
+  <title>Idioma e teclado</title>
+  <desc>Português do Brasil por padrão, vários idiomas suportados.</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Idioma e teclado</title>
+<p>O sistema já vem com pacotes de português. Para trocar depois de instalado:
+<app>Configurações</app> → <em>Região e idioma</em>.</p>
+<p>Teclados extras: <app>Configurações</app> → <em>Teclado</em> → adicione
+layouts (ABNT2, US internacional etc.) e alterne com Super+Espaço.</p>
+</page>

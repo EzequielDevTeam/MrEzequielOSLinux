@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Ajuda do MrEzequielOS
+Comment=Guia do sistema: usar, instalar, atualizar e proteger
+Exec=yelp ghelp:mrezequielos-help
+Icon=help-browser
+Terminal=false
+Type=Application
+Categories=Documentation;Help;
