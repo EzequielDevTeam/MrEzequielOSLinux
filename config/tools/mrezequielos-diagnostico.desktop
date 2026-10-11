@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Diagnóstico do Sistema
+Comment=Coleta logs para descobrir por que algo não aplicou
+Exec=mrezequielos-diagnostico
+Icon=system-run
+Terminal=false
+Type=Application
+Categories=Settings;System;

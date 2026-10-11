@@ -29,21 +29,34 @@ chmod +x "$BASE/gnome/install-extensions.sh" "$BASE/gnome/mrezequielos-appearanc
 "$BASE/gnome/install-extensions.sh" || echo "AVISO extensões falharam, seguindo"
 
 echo "[visual] Padrões do desktop (layout Windows travado)..."
-mkdir -p /etc/dconf/db/gdm.d
+mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d
+cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
 cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
-dconf update || true
+dconf update || echo "AVISO dconf"
+which dconf && dconf update && echo DCONF-OK || true
 
-echo "[visual] Plymouth sem logo Ubuntu (spinner neutro)..."
-update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/spinner/spinner.plymouth 100 2>/dev/null || true
-update-alternatives --set default.plymouth /usr/share/plymouth/themes/spinner/spinner.plymouth 2>/dev/null || echo "AVISO plymouth falhou"
+echo "[visual] Plymouth MrEzequielOS (nossa tela de loading)..."
+mkdir -p /usr/share/plymouth/themes/mrezequielos
+cp "$BASE/plymouth/mrezequielos/mrezequielos.plymouth" /usr/share/plymouth/themes/mrezequielos/ 2>/dev/null || true
+cp "$BASE/branding/plymouth-watermark.png" /usr/share/plymouth/themes/mrezequielos/watermark.png 2>/dev/null || true
+SPIN="/usr/share/plymouth/themes/spinner"
+if [ -d "$SPIN" ]; then
+  cp "$SPIN"/animation-*.png "$SPIN"/throbber-*.png /usr/share/plymouth/themes/mrezequielos/ 2>/dev/null || true
+  cp "$SPIN"/entry.png "$SPIN"/lock.png "$SPIN"/bullet.png "$SPIN"/keyboard.png "$SPIN"/keymap-render.png "$SPIN"/capslock.png /usr/share/plymouth/themes/mrezequielos/ 2>/dev/null || true
+fi
+ls /usr/share/plymouth/themes/mrezequielos/ || true
+update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth 100 2>/dev/null || true
+update-alternatives --set default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth 2>/dev/null || echo "AVISO plymouth falhou"
 
 echo "[visual] Ferramentas MrEzequielOS (atualizador + segurança)..."
 chmod +x "$BASE/tools/"* 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
 cp "$BASE/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
-chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security
+cp "$BASE/tools/mrezequielos-diagnostico" /usr/local/bin/mrezequielos-diagnostico
+chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico
 cp "$BASE/tools/mrezequielos-update.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-security.desktop" /usr/share/applications/ 2>/dev/null || true
+cp "$BASE/tools/mrezequielos-diagnostico.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-appearance.desktop" /usr/share/applications/ 2>/dev/null || true
 mkdir -p /etc/xdg/autostart
 cp "$BASE/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true

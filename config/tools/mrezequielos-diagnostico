@@ -1,0 +1,36 @@
+#!/bin/bash
+# MrEzequielOS Diagnóstico - coleta evidências para saber por que algo não aplicou.
+# Salva em /tmp/mrezequielos-diagnostico.txt e mostra na tela.
+OUT="/tmp/mrezequielos-diagnostico.txt"
+{
+echo "=== MrEzequielOS Diagnóstico $(date) ==="
+echo "--- versão ---"; cat /etc/mrezequielos-version 2>/dev/null; cat /etc/os-release 2>/dev/null | head -3
+echo "--- sessão ---"; echo "XDG: $XDG_SESSION_TYPE / DESKTOP: $XDG_CURRENT_DESKTOP / WAYLAND: $WAYLAND_DISPLAY"
+echo "--- gnome-shell ---"; gnome-shell --version 2>/dev/null
+echo "--- tema/interface ---"
+gsettings get org.gnome.desktop.interface gtk-theme 2>&1
+gsettings get org.gnome.desktop.interface icon-theme 2>&1
+gsettings get org.gnome.desktop.background picture-uri-dark 2>&1
+echo "--- extensões ativas ---"
+gsettings get org.gnome.shell enabled-extensions 2>&1
+gsettings get org.gnome.shell disable-user-extensions 2>&1
+echo "--- extensões instaladas ---"
+ls -1 /usr/share/gnome-shell/extensions 2>&1
+ls -1 ~/.local/share/gnome-shell/extensions 2>&1
+echo "--- erros das extensões (sessão atual) ---"
+journalctl --user -b 0 -g "extension|dash-to-panel|arcmenu|ding|blur" --no-pager 2>/dev/null | tail -20
+echo "--- dconf banco do sistema ---"
+ls -l /etc/dconf/db/ /etc/dconf/db/local.d/ /etc/dconf/db/gdm.d/ 2>&1
+echo "--- plymouth ---"
+update-alternatives --query default.plymouth 2>/dev/null | grep -E "Value:|Best:"
+plymouth-set-default-theme 2>/dev/null || echo "(sem plymouth-set-default-theme)"
+echo "--- journal boot (tail) ---"
+journalctl -b -p err --no-pager 2>/dev/null | tail -10
+echo "=== FIM ==="
+} > "$OUT" 2>&1
+if command -v zenity >/dev/null; then
+  zenity --text-info --title="Diagnóstico MrEzequielOS" --filename="$OUT" --width=750 --height=550 2>/dev/null || cat "$OUT"
+else
+  cat "$OUT"
+fi
+echo "Salvo em $OUT"
