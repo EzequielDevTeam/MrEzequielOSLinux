@@ -1,0 +1,73 @@
+name: test-extensions
+# Reproduz a sessão GNOME do live (headless) e mostra o estado real das extensões.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'config/gnome/install-extensions.sh'
+      - '.github/workflows/test-extensions.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar GNOME mínimo headless
+        run: |
+          sudo apt update
+          sudo apt install -y gnome-shell dbus-x11 python3 unzip curl
+
+      - name: Instalar extensões (mesmo script da ISO)
+        run: |
+          chmod +x config/gnome/install-extensions.sh
+          sudo bash config/gnome/install-extensions.sh
+
+      - name: Validar metadata (shell 46 em cada zip)
+        run: |
+          python3 - <<'EOF'
+          import zipfile, json, glob, sys
+          ok = True
+          for d in glob.glob('/usr/share/gnome-shell/extensions/*/'):
+              try:
+                  m = json.load(open(d + 'metadata.json'))
+              except Exception as e:
+                  print('SEM metadata:', d, e); ok = False; continue
+              svm = m.get('shell-version-map') or {}
+              sv = m.get('shell-version') or []
+              has46 = ('46' in [str(x) for x in svm.keys()]) or ('46' in [str(x) for x in sv])
+              print(('OK  ' if has46 else 'RUIM'), m.get('uuid'), 'v' + str(m.get('version')), '| map:', sorted(svm.keys(), key=str) if svm else sv)
+              if not has46 and 'schneegans' not in d and 'jderose' not in d and 'arcmenu' not in d and 'aunetx' not in d and 'rastersoft' not in d and 'rgcjonas' not in d:
+                  pass
+          sys.exit(0)
+          EOF
+
+      - name: Subir GNOME headless e ligar extensões
+        run: |
+          export XDG_RUNTIME_DIR=/tmp/runtime-mre
+          mkdir -p "$XDG_RUNTIME_DIR" && chmod 700 "$XDG_RUNTIME_DIR"
+          dbus-run-session -- bash -c '
+            export XDG_RUNTIME_DIR=/tmp/runtime-mre
+            gnome-shell --headless --wayland > /tmp/shell.log 2>&1 &
+            SHELL_PID=$!
+            for i in $(seq 1 30); do
+              gdbus introspect --session --dest org.gnome.Shell --object-path /org/gnome/Shell >/dev/null 2>&1 && break
+              sleep 2
+            done
+            echo "=== shell no ar, ligando extensoes ==="
+            for u in dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
+              gnome-extensions enable "$u" 2>&1 || true
+            done
+            sleep 12
+            echo "=== LIGADAS ==="
+            gnome-extensions list --enabled 2>&1
+            echo "=== ESTADO DE CADA UMA ==="
+            for u in dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
+              echo "[$u]"
+              gnome-extensions show "$u" 2>&1 | grep -a -E "State|Error" | head -4
+            done
+            kill $SHELL_PID 2>/dev/null || true
+          '
+          echo "=== ERROS JS NO LOG ==="
+          grep -a -iE "JS ERROR|Extension .* error|error.*extension" /tmp/shell.log | head -20 || echo "(sem erros JS)"
