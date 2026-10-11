@@ -10,7 +10,7 @@ EXT_DIR="/usr/share/gnome-shell/extensions"
 TMP="/tmp/mre-ext"
 mkdir -p "$EXT_DIR" "$TMP"
 cd "$TMP"
-UUIDS="dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com"
+UUIDS="dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com"
 
 install_ego() {
   uuid="$1"

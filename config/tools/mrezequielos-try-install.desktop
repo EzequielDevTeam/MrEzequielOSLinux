@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=MrEzequielOS Try or Install
+Exec=mrezequielos-try-install
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=8

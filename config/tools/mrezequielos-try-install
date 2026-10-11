@@ -1,0 +1,17 @@
+#!/bin/bash
+# MrEzequielOS - diálogo Experimentar ou Instalar (igual Zorin OS).
+# Só aparece na sessão LIVE (casper). Na sessão instalada, sai calado.
+grep -q "boot=casper" /proc/cmdline 2>/dev/null || exit 0
+[ -d /cdrom ] || [ -d /isodevice ] || exit 0
+command -v zenity >/dev/null || exit 0
+sleep 5
+ESCOLHA=$(zenity --list --title="MrEzequielOS" \
+  --text="Bem-vindo ao <b>MrEzequielOS</b>!\nO sistema está rodando do pendrive (modo teste — mais lento que instalado).\nO que você quer fazer?" \
+  --column="Ação" --column="Descrição" \
+  experimentar "Testar o sistema agora (nada é apagado)" \
+  instalar "Instalar no HD/SSD (português, poucos passos)" \
+  --width=520 --height=240 2>/dev/null) || exit 0
+if [ "$ESCOLHA" = "instalar" ]; then
+  ubiquity &
+fi
+exit 0

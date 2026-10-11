@@ -69,6 +69,9 @@ cp "$BASE/tools/mrezequielos-diagnostico.desktop" /usr/share/applications/ 2>/de
 cp "$BASE/tools/mrezequielos-appearance.desktop" /usr/share/applications/ 2>/dev/null || true
 mkdir -p /etc/xdg/autostart
 cp "$BASE/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true
+cp "$BASE/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try-install
+chmod +x /usr/local/bin/mrezequielos-try-install
+cp "$BASE/tools/mrezequielos-try-install.desktop" /etc/xdg/autostart/ 2>/dev/null || true
 mkdir -p /etc/systemd/system /var/lib/mrezequielos
 cp "$BASE/tools/mrezequielos-update-check.service" /etc/systemd/system/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update-check.timer" /etc/systemd/system/ 2>/dev/null || true
