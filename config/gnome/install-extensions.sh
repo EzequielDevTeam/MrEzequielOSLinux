@@ -13,19 +13,32 @@ TMP="/tmp/mre-ext"
 mkdir -p "$EXT_DIR" "$TMP"
 cd "$TMP"
 UUIDS="dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com"
+declare -A MINVER=(
+  [dash-to-panel@jderose9.github.com]=74
+  [arcmenu@arcmenu.com]=74
+  [blur-my-shell@aunetx]=74
+  [ding@rastersoft.com]=85
+  [appindicatorsupport@rgcjonas.gmail.com]=66
+  [burn-my-windows@schneegans.github.com]=49
+  [desktop-cube@schneegans.github.com]=35
+  [dash-to-dock@micxgx.gmail.com]=110
+)
 
 install_ego() {
   uuid="$1"
   echo "[ext] EGO: $uuid (shell $SHELL_VER)"
   rm -f "$uuid.zip"
   curl -sL --retry 3 --max-time 120 -o "$uuid.zip" "$EGO/$uuid.shell-extension.zip?shell_version=$SHELL_VER" || return 1
-  python3 - "$uuid.zip" "$uuid" <<'PYEOF' || return 1
+  python3 - "$uuid.zip" "$uuid" "${MINVER[$uuid]:-0}" <<'PYEOF' || return 1
 import sys, zipfile, json
 z = zipfile.ZipFile(sys.argv[1])
 meta = [n for n in z.namelist() if n.endswith('metadata.json')]
 assert meta, "zip sem metadata.json"
 m = json.load(z.open(meta[0]))
 assert m.get('uuid') == sys.argv[2], "uuid errado: %s" % m.get('uuid')
+ver = int(str(m.get('version', 0)).split('.')[0])
+floor = int(sys.argv[3])
+assert ver >= floor, "versao antiga: v%s (min v%s)" % (ver, floor)
 print("zip OK:", m.get('uuid'), "v" + str(m.get('version', '?')))
 PYEOF
   rm -rf "$EXT_DIR/$uuid"

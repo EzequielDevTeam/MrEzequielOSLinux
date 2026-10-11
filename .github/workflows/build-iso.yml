@@ -62,7 +62,7 @@ jobs:
           /tmp/mre-config/apply-theme.sh
           echo "=== [4b/7] verificacao tema/boot ==="
           ls /usr/share/gnome-shell/extensions
-          which dconf && dconf update && echo DCONF-OK
+          which dconf && dconf update 2>&1 | tee /tmp/dconf.log; grep -aiE "warn|error|fail" /tmp/dconf.log && echo "AVISO dconf acima" || echo DCONF-OK
           dpkg -l | grep -E "plymouth-theme|dconf-cli" || true
           apt purge -y plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text 2>/dev/null || true
           apt install -y plymouth plymouth-theme-spinner 2>/dev/null || true
