@@ -15,6 +15,7 @@ update-notifier
 gnome-tweaks
 gnome-shell-extension-manager
 gnome-shell-extension-prefs
+gir1.2-gmenu-3.0
 gnome-disk-utility
 seahorse
 network-manager-gnome
