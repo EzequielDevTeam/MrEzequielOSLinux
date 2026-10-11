@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Segurança MrEzequielOS
+Comment=Firewall + atualizações automáticas + endurecimento
+Exec=pkexec mrezequielos-security
+Icon=security-high
+Terminal=false
+Type=Application
+Categories=Settings;Security;

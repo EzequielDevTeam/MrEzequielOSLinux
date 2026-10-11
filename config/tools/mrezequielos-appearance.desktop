@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=MrEzequielOS Appearance
+Comment=Trocar layout Windows / macOS / Ubuntu (estilo Zorin)
+Exec=mrezequielos-appearance
+Icon=mrezequielos
+Terminal=false
+Type=Application
+Categories=Settings;DesktopSettings;

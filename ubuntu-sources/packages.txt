@@ -1,0 +1,8 @@
+casper
+ubiquity
+ubiquity-slideshow-ubuntu
+gnome-shell
+gdm3
+mutter
+plymouth
+grub2

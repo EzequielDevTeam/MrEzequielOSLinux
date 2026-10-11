@@ -1,0 +1,72 @@
+#!/bin/bash
+# MrEzequielOS Update - atualizador próprio (OTA via apt, sem apagar o sistema)
+# Uso: mrezequielos-update [--check|--notify]
+#  --check:  silencioso (systemd timer, root). Grava /var/lib/mrezequielos/update-available
+#  --notify: mostra aviso se houver atualização (autostart, usuário)
+#  (sem args): interface gráfica completa
+REPO="EzequielDevTeam/MrEzequielOSLinux"
+VER_FILE="/etc/mrezequielos-version"
+FLAG="/var/lib/mrezequielos/update-available"
+CUR=$(cat "$VER_FILE" 2>/dev/null || echo "1.0")
+API="https://api.github.com/repos/$REPO/releases/latest"
+
+latest_tag() {
+  curl -s --max-time 25 "$API" 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('tag_name',''))" 2>/dev/null || echo ""
+}
+ver_gt() { [ "$(printf '%s\n%s' "$1" "$2" | sort -V | tail -1)" != "$1" ] || [ "$1" != "$2" ] && [ "$(printf '%s\n%s' "$1" "$2" | sort -V | head -1)" = "$1" ] && [ "$1" != "$2" ]; }
+
+case "$1" in
+  --check)
+    mkdir -p /var/lib/mrezequielos
+    TAG=$(latest_tag); TAG="${TAG#v}"
+    if [ -n "$TAG" ] && [ "$TAG" != "$CUR" ] && printf '%s\n%s' "$CUR" "$TAG" | sort -V -C 2>/dev/null; then
+      : # CUR já é o maior
+    fi
+    if [ -n "$TAG" ] && [ "$TAG" != "$CUR" ] && [ "$(printf '%s\n%s' "$CUR" "$TAG" | sort -V | tail -1)" = "$TAG" ]; then
+      echo "$TAG" > "$FLAG"
+    else
+      rm -f "$FLAG"
+    fi
+    exit 0
+    ;;
+  --notify)
+    if [ -f "$FLAG" ]; then
+      TAG=$(cat "$FLAG")
+      zenity --info --title="MrEzequielOS Update" --text="Nova versão disponível: <b>$TAG</b> (atual: $CUR).\nAbra <b>Atualização do Sistema</b> para atualizar sem perder nada." 2>/dev/null || echo "Atualização disponível: $TAG"
+    fi
+    exit 0
+    ;;
+esac
+
+# --- modo interativo ---
+if ! command -v zenity >/dev/null; then
+  echo "Versão atual: $CUR"; echo "Use a interface gráfica (zenity) para o assistente."
+  sudo apt update && sudo apt full-upgrade -y
+  exit $?
+fi
+TAG=$(latest_tag); TAG="${TAG#v}"
+if [ -z "$TAG" ]; then
+  zenity --info --title="MrEzequielOS Update" --text="Não consegui verificar agora (sem internet?).\nVersão atual: <b>$CUR</b>." 2>/dev/null
+  exit 0
+fi
+if [ "$TAG" = "$CUR" ]; then
+  zenity --info --title="MrEzequielOS Update" --text="Seu sistema já está atualizado. Versão: <b>$CUR</b>." 2>/dev/null
+  # mesmo atualizado, oferece upgrade de pacotes Ubuntu
+  if zenity --question --title="MrEzequielOS Update" --text="Buscar atualizações de pacotes do Ubuntu agora?" 2>/dev/null; then
+    xterm -e "sudo apt update && sudo apt full-upgrade -y; echo CONCLUIDO; sleep 3" 2>/dev/null || sudo apt update && sudo apt full-upgrade -y
+  fi
+  rm -f "$FLAG"
+  exit 0
+fi
+if zenity --question --title="MrEzequielOS Update" --text="Nova versão do sistema: <b>$TAG</b> (atual: $CUR).\nAtualizar agora? Nada será apagado." 2>/dev/null; then
+  sudo apt update && sudo apt full-upgrade -y
+  RC=$?
+  if [ $RC -eq 0 ]; then
+    rm -f "$FLAG"
+    zenity --info --title="MrEzequielOS Update" --text="Atualização concluída. Reinicie para aplicar tudo." 2>/dev/null
+  else
+    zenity --error --title="MrEzequielOS Update" --text="Falha na atualização (código $RC). Tente de novo." 2>/dev/null
+  fi
+else
+  xdg-open "https://github.com/$REPO/releases" 2>/dev/null || true
+fi

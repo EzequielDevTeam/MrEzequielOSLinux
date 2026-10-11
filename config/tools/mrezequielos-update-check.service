@@ -1,0 +1,6 @@
+[Unit]
+Description=MrEzequielOS - verifica atualização do sistema
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mrezequielos-update --check

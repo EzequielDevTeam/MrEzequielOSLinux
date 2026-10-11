@@ -1,0 +1,63 @@
+# MrEzequielOS - padrões do desktop estilo Zorin (layout Windows)
+# Instalado em /etc/dconf/db/gdm.d/ pelo apply-theme.sh. Rode `dconf update` depois.
+[org/gnome/desktop/interface]
+gtk-theme='Yaru-dark'
+icon-theme='Papirus-Dark'
+cursor-theme='Yaru'
+font-name='Inter 11'
+document-font-name='Inter 11'
+monospace-font-name='Ubuntu Mono 13'
+enable-animations=true
+
+[org/gnome/desktop/background]
+picture-uri='file:///usr/share/backgrounds/mrezequielos-wallpaper.svg'
+picture-uri-dark='file:///usr/share/backgrounds/mrezequielos-wallpaper.svg'
+picture-options='zoom'
+
+[org/gnome/desktop/screensaver]
+picture-uri='file:///usr/share/backgrounds/mrezequielos-wallpaper.svg'
+lock-enabled=true
+
+[org/gnome/desktop/wm/preferences]
+theme='Yaru-dark'
+button-layout='close,minimize,maximize:'
+
+[org/gnome/shell]
+favorite-apps=['firefox.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'gnome-software.desktop']
+enabled-extensions=['dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']
+disable-user-extensions=false
+
+[org/gnome/shell/extensions/dash-to-panel]
+panel-positions={'0': 'BOTTOM'}
+panel-sizes={'0': 48}
+show-show-apps-button=true
+show-apps-icon-side-padding=8
+translucent-panel=true
+isolate-workspaces=true
+isolate-monitors=true
+group-apps=true
+show-favorites=true
+show-running-apps=true
+animate-appicon-hover=true
+
+[org/gnome/shell/extensions/arcmenu]
+menu-layout='Windows 11'
+menu-button-position='Left'
+position-in-panel='Left'
+
+[org/gnome/shell/extensions/ding]
+show-home=true
+show-trash=true
+show-volumes=true
+
+[org/gnome/shell/extensions/blur-my-shell/panel]
+blur=true
+brightness=0.6
+sigma=30
+
+[org/gnome/desktop/peripherals/touchpad]
+tap-to-click=true
+
+[org/freedesktop/tracker/miner/files]
+crawling-interval=-2
+enable-monitors=false

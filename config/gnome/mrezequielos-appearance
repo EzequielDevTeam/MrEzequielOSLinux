@@ -1,60 +1,57 @@
 #!/bin/bash
-# MrEzequielOS Appearance estilo Zorin - aplica layout Windows ou macOS
+# MrEzequielOS Appearance estilo Zorin - aplica layout Windows, macOS ou Ubuntu
 # Uso: mrezequielos-appearance [windows|mac|ubuntu]
-set -e
 MODE="${1:-}"
 if [ -z "$MODE" ]; then
   MODE=$(zenity --list --title="MrEzequielOS Appearance" \
     --text="Escolha o layout do desktop (igual Zorin OS):" \
     --column="Layout" --column="Descrição" \
-    windows "Barra única embaixo (Windows/Zorin padrão)" \
+    windows "Barra única embaixo + menu iniciar (padrão)" \
     mac "Barra em cima + dock embaixo (macOS)" \
     ubuntu "Barra lateral (Ubuntu)" 2>/dev/null || echo "windows")
 fi
 
+ok() { zenity --info --title="MrEzequielOS Appearance" --text="Layout <b>$1</b> aplicado.\nSaia e entre de novo (ou Alt+F2 → r no Xorg) para recarregar as extensões." 2>/dev/null || echo "Layout $1 aplicado."; }
+
 apply_windows() {
-  echo "[layout] Windows/Zorin..."
-  # Tema escuro Zorin-like
   gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' || true
-  gsettings set org.gnome.desktop.interface font-name 'Inter 11' || gsettings set org.gnome.desktop.interface font-name 'Ubuntu 11' || true
+  gsettings set org.gnome.desktop.interface cursor-theme 'Yaru' || true
+  if gsettings set org.gnome.desktop.interface font-name 'Inter 11' 2>/dev/null; then :; else gsettings set org.gnome.desktop.interface font-name 'Ubuntu 11' || true; fi
+  gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
+  gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
   gsettings set org.gnome.shell favorite-apps "['firefox.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'gnome-software.desktop']" || true
-  # Taskbar embaixo via Dash to Panel
   gsettings set org.gnome.shell enabled-extensions "['dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']" || true
-  # Dash to Panel: embaixo, centralizado, altura 48, estilo Windows
+  gsettings set org.gnome.shell disable-user-extensions false || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/panel-positions "'{\"0\":\"BOTTOM\"}'" || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/panel-sizes "'{\"0\":48}'" || true
-  dconf write /org/gnome/shell/extensions/dash-to-panel/show-apps-icon-side-padding 8 || true
-  dconf write /org/gnome/shell/extensions/dash-to-panel/translucent-panel true || true
-  # ArcMenu: canto esquerdo, ícone MrEzequielOS, layout Windows 11 / Zorin
+  dconf write /org/gnome/shell/extensions/dash-to-panel/show-show-apps-button true || true
+  dconf write /org/gnome/shell/extensions/dash-to-panel/isolate-workspaces true || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-layout "'Windows 11'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-position "'Left'" || true
-  # Desktop icons ativados
   gsettings set org.gnome.shell.extensions.ding show-home true || true
   gsettings set org.gnome.shell.extensions.ding show-trash true || true
-  # Blur leve
-  dconf write /org/gnome/shell/extensions/blur-my-shell/panel/blur true || true
 }
 
 apply_mac() {
-  echo "[layout] macOS..."
   gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' || true
-  # Desliga taskbar, usa dash-to-dock centralizado
+  gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
+  gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
   gsettings set org.gnome.shell enabled-extensions "['ding@rastersoft.com', 'blur-my-shell@aunetx', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com', 'dash-to-dock@micxgx.gmail.com']" || true
   dconf write /org/gnome/shell/extensions/dash-to-dock/dock-position "'BOTTOM'" || true
   dconf write /org/gnome/shell/extensions/dash-to-dock/extend-height false || true
 }
 
 apply_ubuntu() {
-  echo "[layout] Ubuntu..."
+  gsettings set org.gnome.desktop.interface gtk-theme 'Yaru' || true
+  gsettings set org.gnome.desktop.interface icon-theme 'Papirus' || true
   gsettings set org.gnome.shell enabled-extensions "['ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'ubuntu-dock@ubuntu.com']" || true
   gsettings set org.gnome.shell favorite-apps "['firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'gnome-software.desktop']" || true
 }
 
 case "$MODE" in
-  mac*) apply_mac ;;
-  ubuntu*) apply_ubuntu ;;
-  *) apply_windows ;;
+  mac*) apply_mac; ok "macOS" ;;
+  ubuntu*) apply_ubuntu; ok "Ubuntu" ;;
+  *) apply_windows; ok "Windows" ;;
 esac
-echo "Layout $MODE aplicado. Reinicie a sessão (Alt+F2 -> r, ou logout)."

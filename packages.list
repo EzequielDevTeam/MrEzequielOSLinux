@@ -33,7 +33,6 @@ meson
 ninja-build
 gettext
 sassc
-nodejs
 libglib2.0-bin
 software-properties-common
 librsvg2-bin
@@ -76,6 +75,14 @@ thermald
 zram-tools
 preload
 gamemode
+
+# Segurança própria MrEzequielOS
+ufw
+unattended-upgrades
+
+# Boot com a nossa cara (spinner neutro, sem logo Ubuntu)
+plymouth
+plymouth-theme-spinner
 
 # Impressão
 cups

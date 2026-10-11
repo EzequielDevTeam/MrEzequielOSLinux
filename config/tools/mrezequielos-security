@@ -1,0 +1,46 @@
+#!/bin/bash
+# MrEzequielOS Security - pacote próprio de segurança (firewall + updates automáticos + endurecimento)
+# Uso interativo (pede root via pkexec no .desktop) ou: sudo mrezequielos-security
+if [ "$(id -u)" != "0" ]; then
+  echo "Precisa de root. Rode: sudo mrezequielos-security"
+  exit 1
+fi
+say() { echo "[segurança] $1"; }
+
+say "Firewall (ufw)..."
+apt install -y ufw unattended-upgrades 2>/dev/null || true
+ufw --force enable 2>/dev/null || true
+ufw default deny incoming 2>/dev/null || true
+ufw default allow outgoing 2>/dev/null || true
+systemctl enable ufw 2>/dev/null || true
+
+say "Atualizações automáticas de segurança..."
+cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";
+APT::Periodic::Unattended-Upgrade "1";
+EOF
+systemctl enable unattended-upgrades 2>/dev/null || true
+
+say "Endurecimento do kernel (sysctl)..."
+cat > /etc/sysctl.d/99-mrezequielos.conf <<'EOF'
+# MrEzequielOS - endurecimento leve (não quebra desktop)
+kernel.kptr_restrict=2
+kernel.dmesg_restrict=1
+kernel.unprivileged_bpf_disabled=2
+net.ipv4.tcp_syncookies=1
+net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1
+net.ipv4.icmp_echo_ignore_broadcasts=1
+kernel.yama.ptrace_scope=1
+fs.protected_hardlinks=1
+fs.protected_symlinks=1
+EOF
+sysctl --system 2>/dev/null || true
+
+say "Limpando telemetria..."
+apt purge -y apport whoopsie popularity-contest 2>/dev/null || true
+
+say "OK - proteção ativa: firewall + updates automáticos + sysctl."
+command -v zenity >/dev/null && sudo -u "${SUDO_USER:-$USER}" zenity --info --title="MrEzequielOS Segurança" --text="Proteção ativa:\n• Firewall ligado\n• Atualizações automáticas ligadas\n• Kernel endurecido" 2>/dev/null || true

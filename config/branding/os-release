@@ -1,11 +1,11 @@
-PRETTY_NAME="MrEzequielOS 1.0"
+PRETTY_NAME="MrEzequielOS 1.1"
 NAME="MrEzequielOS"
-VERSION_ID="1.0"
-VERSION="1.0 (Noble)"
+VERSION_ID="1.1"
+VERSION="1.1 (Noble)"
 VERSION_CODENAME=noble
 ID=mrezequielos
 ID_LIKE=ubuntu
-HOME_URL="https://github.com/"
-SUPPORT_URL="https://github.com/"
-BUG_REPORT_URL="https://github.com/"
+HOME_URL="https://github.com/EzequielDevTeam/MrEzequielOSLinux"
+SUPPORT_URL="https://github.com/EzequielDevTeam/MrEzequielOSLinux"
+BUG_REPORT_URL="https://github.com/EzequielDevTeam/MrEzequielOSLinux"
 UBUNTU_CODENAME=noble

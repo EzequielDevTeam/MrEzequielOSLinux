@@ -1,0 +1,10 @@
+[Unit]
+Description=MrEzequielOS - verificação semanal de atualização
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=7d
+Persistent=true
+
+[Install]
+WantedBy=timers.target

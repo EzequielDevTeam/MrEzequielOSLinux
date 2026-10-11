@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=MrEzequielOS Update Notify
+Exec=mrezequielos-update --notify
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
