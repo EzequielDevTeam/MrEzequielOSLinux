@@ -31,6 +31,7 @@ PYEOF
   rm -rf "$EXT_DIR/$uuid"
   mkdir -p "$EXT_DIR/$uuid"
   unzip -q -o "$uuid.zip" -d "$EXT_DIR/$uuid" || return 1
+  chmod -R a+rX "$EXT_DIR/$uuid"
   [ -d "$EXT_DIR/$uuid/schemas" ] && glib-compile-schemas "$EXT_DIR/$uuid/schemas" || true
   return 0
 }
@@ -60,6 +61,7 @@ git_ding() {
   [ -d ding/schemas ] && { mkdir -p "$EXT_DIR/$UUID/schemas"; cp -r ding/schemas/* "$EXT_DIR/$UUID/schemas/"; }
   [ -d ding/locale ] && cp -r ding/locale "$EXT_DIR/$UUID/"
   [ -f ding/stylesheet.css ] && cp ding/stylesheet.css "$EXT_DIR/$UUID/"
+  chmod -R a+rX "$EXT_DIR/$UUID"
   glib-compile-schemas "$EXT_DIR/$UUID/schemas" 2>/dev/null || true
 }
 git_appindicator() {
