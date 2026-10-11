@@ -64,7 +64,9 @@ jobs:
           which dconf && dconf update && echo DCONF-OK
           dpkg -l | grep -E "plymouth-theme|dconf-cli" || true
           apt purge -y plymouth-theme-ubuntu-logo plymouth-theme-ubuntu-text 2>/dev/null || true
-          plymouth-set-default-theme -R spinner
+          apt install -y plymouth plymouth-theme-spinner 2>/dev/null || true
+          for p in gdm3 gnome-shell plymouth; do dpkg -s $p >/dev/null 2>&1 || apt install -y $p; done
+          command -v plymouth-set-default-theme && plymouth-set-default-theme -R spinner || echo "AVISO plymouth"
           update-alternatives --query default.plymouth | grep -E "Value:" || true
           echo "=== [5/7] initramfs ==="
           update-initramfs -u -k all
@@ -82,7 +84,9 @@ jobs:
           echo "=== CHROOT OK ==="
           EOF
           sudo chmod +x chroot/tmp/build-inside.sh
+          set +e
           sudo chroot chroot /tmp/build-inside.sh 2>&1 | tee /tmp/mre-chroot.log; RC=${PIPESTATUS[0]}
+          set -e
           echo "chroot rc=$RC"
           cp /tmp/mre-chroot.log ./mre-chroot.log
           [ $RC -eq 0 ] || exit $RC
