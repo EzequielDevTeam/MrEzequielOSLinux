@@ -10,6 +10,8 @@ gnome-text-editor
 nautilus
 file-roller
 gnome-software
+update-manager
+update-notifier
 gnome-tweaks
 gnome-shell-extension-manager
 gnome-shell-extension-prefs
