@@ -44,11 +44,12 @@ show-running-apps=true
 animate-appicon-hover=true
 
 [org/gnome/shell/extensions/arcmenu]
-menu-layout='Windows 11'
-menu-button-position='Left'
-position-in-panel='Left'
-menu-button-icon='/usr/share/pixmaps/mrezequielos-logo.svg'
-custom-menu-button-icon=true
+menu-layout='11'
+menu-button-appearance='Icon'
+menu-button-icon='/usr/share/pixmaps/mrezequielos-start.svg'
+menu-button-icon-size=28
+menu-button-border-radius=(true, 22)
+show-activities-button=false
 
 [org/gnome/shell/extensions/ding]
 show-home=true
