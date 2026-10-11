@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# MrEzequielOS - (c) EzequielDevTeam. Veja LICENSE e TRADEMARK.md.
 # Aplica visual + ferramentas MrEzequielOS estilo Zorin no chroot / sistema instalado
 set -e
 BASE="$(dirname "$0")"
@@ -56,6 +58,16 @@ fi
 ls /usr/share/plymouth/themes/mrezequielos/ || true
 update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth 100 2>/dev/null || true
 update-alternatives --set default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth 2>/dev/null || echo "AVISO plymouth falhou"
+
+echo "[visual] Licença GPLv3 + marca..."
+mkdir -p /usr/share/doc/mrezequielos
+for L in "$BASE/../LICENSE" /tmp/LICENSE; do
+  if [ -f "$L" ]; then cp "$L" /usr/share/doc/mrezequielos/LICENSE; break; fi
+done
+for T in "$BASE/../TRADEMARK.md" /tmp/TRADEMARK.md; do
+  if [ -f "$T" ]; then cp "$T" /usr/share/doc/mrezequielos/TRADEMARK.md; break; fi
+done
+ls /usr/share/doc/mrezequielos/ || true
 
 echo "[visual] Ferramentas MrEzequielOS (atualizador + segurança)..."
 chmod +x "$BASE/tools/"* 2>/dev/null || true

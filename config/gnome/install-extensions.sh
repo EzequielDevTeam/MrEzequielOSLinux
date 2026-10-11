@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# MrEzequielOS - (c) EzequielDevTeam. Veja LICENSE e TRADEMARK.md.
 # MrEzequielOS - Instala extensões estilo Zorin OS (GNOME 46 / Ubuntu 24.04)
 # Método 1: zips oficiais do extensions.gnome.org (rápido, sem compilar)
 # Método 2 (fallback): git + make/meson

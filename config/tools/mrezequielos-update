@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# MrEzequielOS - (c) EzequielDevTeam. Veja LICENSE e TRADEMARK.md.
 # MrEzequielOS Update - atualizador próprio (OTA, sem apagar o sistema)
 # Como funciona (igual ao modelo do Zorin OS, fonte: help.zorin.com):
 #  - Apps e pacotes Ubuntu: pela Loja (GNOME Software) + segurança automática.
@@ -41,6 +43,9 @@ apply_release() {
   cp "$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
   cp "$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
   cp "$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
+  mkdir -p /usr/share/doc/mrezequielos
+  cp "$TOP/LICENSE" /usr/share/doc/mrezequielos/LICENSE 2>/dev/null || true
+  cp "$TOP/TRADEMARK.md" /usr/share/doc/mrezequielos/TRADEMARK.md 2>/dev/null || true
   mkdir -p /etc/dconf/db/gdm.d
   cp "$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
   dconf update || true

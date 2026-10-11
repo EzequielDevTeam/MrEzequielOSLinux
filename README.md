@@ -1,6 +1,10 @@
 # MrEzequielOS 🐧
 Baseado no Ubuntu 24.04 LTS (Noble) + GNOME Minimal estilo Zorin OS (leve e bonito).
 
+**Licença:** código sob [GPLv3](LICENSE) — pode estudar e modificar, mas quem
+redistribuir tem que manter aberto. Nome, logo e identidade visual são marca
+exclusiva do projeto (veja [TRADEMARK.md](TRADEMARK.md)).
+
 ## O que é?
 MrEzequielOS = Ubuntu minimal (debootstrap) + `gnome-core` + `gdm3` + taskbar Windows (Dash to Panel) + menu iniciar (ArcMenu) + tema escuro + apps essenciais.
 ISO com boot BIOS + UEFI (Secure Boot desligado no v1).

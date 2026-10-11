@@ -43,6 +43,7 @@ jobs:
         run: |
           set -o pipefail
           sudo cp packages.list chroot/tmp/
+          sudo cp LICENSE TRADEMARK.md chroot/tmp/ 2>/dev/null || true
           sudo mkdir -p chroot/tmp/mre-config
           sudo cp -r config/* chroot/tmp/mre-config/
           sudo tee chroot/tmp/build-inside.sh > /dev/null <<'EOF'
