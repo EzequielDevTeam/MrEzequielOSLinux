@@ -29,11 +29,20 @@ chmod +x "$BASE/gnome/install-extensions.sh" "$BASE/gnome/mrezequielos-appearanc
 "$BASE/gnome/install-extensions.sh" || echo "AVISO extensões falharam, seguindo"
 
 echo "[visual] Padrões do desktop (layout Windows travado)..."
-mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d
+mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d /etc/dconf/profile
 cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
 cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
+cat > /etc/dconf/profile/user <<'EOF'
+user-db:user
+system-db:local
+system-db:site
+system-db:distro
+system-db:gdm
+EOF
+cat /etc/dconf/profile/user
 dconf update || echo "AVISO dconf"
 which dconf && dconf update && echo DCONF-OK || true
+ls -l /etc/dconf/db/local /etc/dconf/db/gdm 2>/dev/null || echo "AVISO db nao compilado"
 
 echo "[visual] Plymouth MrEzequielOS (nossa tela de loading)..."
 mkdir -p /usr/share/plymouth/themes/mrezequielos
