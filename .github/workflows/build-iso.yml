@@ -103,6 +103,13 @@ jobs:
           insmod part_msdos
           insmod iso9660
           insmod ext2
+          insmod all_video
+          insmod gfxterm
+          insmod png
+          background_image /boot/grub/splash.png
+          set menu_color_normal=white/black
+          set menu_color_highlight=black/white
+          set color_normal=white/black
           set timeout=15
           set default=0
           menuentry "Experimentar o MrEzequielOS" {
@@ -123,6 +130,7 @@ jobs:
           }
           EOF
           echo 'MrEzequielOS 1.1 LTS "Noble" - Release amd64' | sudo tee iso/.disk/info > /dev/null
+          sudo cp config/branding/grub-bg.png iso/boot/grub/splash.png
           echo "=== squashfs (zstd) ==="
           sudo mksquashfs chroot iso/casper/filesystem.squashfs -comp zstd -b 1M -noappend
           echo "=== ISO (BIOS+UEFI) ==="

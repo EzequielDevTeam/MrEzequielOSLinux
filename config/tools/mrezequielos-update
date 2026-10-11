@@ -32,6 +32,7 @@ case "$1" in
   --notify)
     if [ -f "$FLAG" ]; then
       TAG=$(cat "$FLAG")
+      notify-send "MrEzequielOS Update" "Nova versão disponível: $TAG (atual: $CUR). Abra Atualização do Sistema." -i system-software-update 2>/dev/null || true
       zenity --info --title="MrEzequielOS Update" --text="Nova versão disponível: <b>$TAG</b> (atual: $CUR).\nAbra <b>Atualização do Sistema</b> para atualizar sem perder nada." 2>/dev/null || echo "Atualização disponível: $TAG"
     fi
     exit 0

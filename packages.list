@@ -48,6 +48,10 @@ fonts-noto-core
 fonts-inter
 dconf-editor
 zenity
+libnotify-bin
+locales
+language-pack-pt
+language-pack-gnome-pt
 
 # Live + instalador + kernel + firmware
 casper

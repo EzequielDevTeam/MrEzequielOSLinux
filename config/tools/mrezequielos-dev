@@ -1,0 +1,78 @@
+#!/bin/bash
+# MrEzequielOS Dev Center - só para o dono e colaboradores do projeto.
+# Publica versões direto do Linux: bump de versão, commit, push, build e release.
+# Pré-requisitos: git + gh autenticado (gh auth login) com acesso de escrita no repo.
+REPO="EzequielDevTeam/MrEzequielOSLinux"
+WORK="$HOME/MrEzequielOSLinux"
+URL="https://github.com/$REPO.git"
+
+die() { zenity --error --title="Dev Center" --text="$1" 2>/dev/null || echo "ERRO: $1"; exit 1; }
+info() { zenity --info --title="Dev Center" --text="$1" 2>/dev/null || echo "$1"; }
+
+command -v git >/dev/null || die "git não instalado."
+command -v gh >/dev/null || die "Instale o GitHub CLI: sudo apt install gh e rode gh auth login."
+gh auth status >/dev/null 2>&1 || die "Rode 'gh auth login' primeiro."
+command -v zenity >/dev/null || die "zenity não instalado."
+
+if [ ! -d "$WORK/.git" ]; then
+  if zenity --question --title="Dev Center" --text="Clonar o repo em $WORK?" 2>/dev/null; then
+    git clone "$URL" "$WORK" || die "Falha ao clonar. Você tem acesso de escrita?"
+  else
+    exit 0
+  fi
+fi
+cd "$WORK" || die "Sem acesso a $WORK."
+git fetch origin >/dev/null 2>&1 || die "Sem acesso ao repo (só colaboradores)."
+CUR_OS=$(grep -oP 'VERSION_ID="\K[^"]+' config/branding/os-release 2>/dev/null || echo "?")
+
+ACAO=$(zenity --list --title="MrEzequielOS Dev Center (versão atual: $CUR_OS)" \
+  --text="O que publicar?" --column="Ação" --column="Descrição" \
+  estavel "Nova versão ESTÁVEL (pede número, compila, cria release)" \
+  teste "Nova versão TESTE/BETA (pre-release, não aparece no atualizador)" \
+  status "Ver status do último build" \
+  release "Publicar release da ISO atual (stable ou teste)" 2>/dev/null || echo "")
+[ -z "$ACAO" ] && exit 0
+
+bump_version() {
+  NEW="$1"
+  sed -i "s/VERSION_ID=\".*\"/VERSION_ID=\"$NEW\"/" config/branding/os-release
+  sed -i "s/PRETTY_NAME=\".*\"/PRETTY_NAME=\"MrEzequielOS $NEW\"/" config/branding/os-release
+  sed -i "s/^VERSION=\".*\"/VERSION=\"$NEW (Noble)\"/" config/branding/os-release
+  sed -i "s|echo \"[0-9.]*\" > /etc/mrezequielos-version|echo \"$NEW\" > /etc/mrezequielos-version|" config/apply-theme.sh
+  sed -i "s/MrEzequielOS-1\.[0-9]-amd64/MrEzequielOS-$NEW-amd64/g; s/MrEzequielOS 1\.[0-9]/MrEzequielOS $NEW/g" .github/workflows/build-iso.yml
+  echo "$NEW"
+}
+
+case "$ACAO" in
+  estavel|teste)
+    NEW=$(zenity --entry --title="Dev Center" --text="Número da nova versão (atual: $CUR_OS):" --entry-text="$CUR_OS" 2>/dev/null || echo "")
+    [ -z "$NEW" ] && exit 0
+    NOTAS=$(zenity --entry --title="Dev Center" --text="Notas da versão (o que mudou):" 2>/dev/null || echo "Atualização")
+    bump_version "$NEW" >/dev/null
+    git add -A && git commit -m "v$NEW: $NOTAS" || die "Nada para commitar?"
+    git push origin main || die "Push falhou (sem permissão?)."
+    if [ "$ACAO" = "teste" ]; then
+      info "Build disparado. Acompanhe em Actions. Quando pronto, crie a pre-release na próxima execução (ação release)."
+    else
+      info "Build v$NEW disparado no GitHub. Acompanhe em Actions > build-iso."
+    fi
+    ;;
+  status)
+    gh run list --repo "$REPO" --branch main --limit 5 2>/dev/null | zenity --text-info --title="Dev Center - builds" --width=700 --height=300 2>/dev/null || gh run list --repo "$REPO" --branch main --limit 5
+    ;;
+  release)
+    TIPO=$(zenity --list --title="Dev Center" --text="Tipo:" --column=t --column=d stable "Release estável (atualizador avisa)" teste "Pre-release de TESTE (só link direto)" 2>/dev/null || echo "")
+    [ -z "$TIPO" ] && exit 0
+    TAG=$(zenity --entry --title="Dev Center" --text="Tag (ex: v1.2):" 2>/dev/null || echo "")
+    [ -z "$TAG" ] && exit 0
+    NOTAS=$(zenity --entry --title="Dev Center" --text="Notas:" 2>/dev/null || echo "Atualização")
+    if [ "$TIPO" = "teste" ]; then
+      gh release create "$TAG" --repo "$REPO" --title "MrEzequielOS $TAG (TESTE)" --notes "$NOTAS
+
+VERSÃO DE TESTE: baixe a ISO em Actions > Artifacts do build correspondente." --prerelease || die "Falha ao criar pre-release."
+    else
+      gh release create "$TAG" --repo "$REPO" --title "MrEzequielOS $TAG" --notes "$NOTAS" || die "Falha ao criar release."
+    fi
+    info "Release $TAG publicada."
+    ;;
+esac
