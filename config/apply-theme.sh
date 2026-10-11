@@ -85,6 +85,23 @@ mkdir -p /usr/share/help/C/mrezequielos-help
 cp "$BASE/help/C/mrezequielos-help/"*.page /usr/share/help/C/mrezequielos-help/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-help.desktop" /usr/share/applications/ 2>/dev/null || true
 
+echo "[visual] Slideshow do instalador em pt-BR (nossa cara + nosso wallpaper)..."
+SS="/usr/share/ubiquity-slideshow/slides"
+if [ -d "$SS" ]; then
+  for f in welcome usc browse office music photos accessibility gethelp; do
+    cp "$BASE/slideshow/$f.html" "$SS/$f.html" 2>/dev/null || true
+    for loc in l10n/pt_BR l10n/pt; do
+      [ -f "$SS/$loc/$f.html" ] && cp "$BASE/slideshow/$f.html" "$SS/$loc/$f.html" 2>/dev/null || true
+    done
+  done
+  for s in welcome browse office music photos gs customize; do
+    cp "$BASE/branding/grub-bg.png" "$SS/screenshots/$s.png" 2>/dev/null || true
+  done
+  ls "$SS"/welcome.html "$SS"/l10n/pt_BR/welcome.html 2>/dev/null || true
+else
+  echo "AVISO slideshow ausente"
+fi
+
 echo "[visual] App Appearance (trocar layout Windows/macOS)..."
 cp "$BASE/gnome/mrezequielos-appearance" /usr/local/bin/mrezequielos-appearance
 chmod +x /usr/local/bin/mrezequielos-appearance
