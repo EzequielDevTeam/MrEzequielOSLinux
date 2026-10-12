@@ -71,3 +71,111 @@ jobs:
           '
           echo "=== ERROS JS NO LOG ==="
           grep -a -iE "JS ERROR|Extension .* error|error.*extension" /tmp/shell.log | head -20 || echo "(sem erros JS)"
+
+  test-update:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sintaxe de tudo
+        run: |
+          bash -n config/tools/mrezequielos-update
+          bash -n config/tools/mre-apply-lib.sh
+          bash -n config/gnome/install-extensions.sh
+          bash -n config/apply-theme.sh
+          python3 -m py_compile config/tools/mrezequielos-appearance-gtk.py
+          echo SINTAXE-OK
+
+      - name: Consistência das listas
+        run: |
+          python3 - <<'EOF'
+          def rd(p):
+              return {l.strip() for l in open(p) if l.strip() and not l.strip().startswith('#')}
+          req = rd('config/required-extensions.txt')
+          obs = rd('config/obsolete-extensions.txt')
+          assert req.isdisjoint(obs), 'intersecao required/obsolete: %s' % (req & obs)
+          inst = set()
+          import re
+          txt = open('config/gnome/install-extensions.sh').read()
+          m = re.search(r'UUIDS="([^"]+)"', txt)
+          inst = set(m.group(1).split())
+          missing = {u for u in req if u not in inst and 'zorin-taskbar' not in u}
+          # zorin-taskbar vem via git, fora do UUIDS? verifica:
+          assert 'zorin-taskbar@zorinos.com' in txt, 'zorin-taskbar sem instalador'
+          assert not missing, 'required sem instalador: %s' % missing
+          print('listas OK:', len(req), 'required,', len(obs), 'obsoletas')
+          EOF
+
+      - name: Core packages existem (dry-run)
+        run: |
+          sudo apt update
+          sudo apt install -y dconf-cli
+          grep -vE '^[[:space:]]*(#|$)' config/core-packages.txt | tr '\n' ' ' | xargs sudo apt-get install -s
+
+      - name: Purge só remove obsoletas (fakes)
+        run: |
+          export MRE_EXT_SYS=/tmp/fake-ext MRE_HOMES=/tmp/fake-home
+          mkdir -p "$MRE_EXT_SYS/dash-to-panel@jderose9.github.com" "$MRE_EXT_SYS/zorin-taskbar@zorinos.com"
+          touch "$MRE_EXT_SYS/dash-to-panel@jderose9.github.com/metadata.json" "$MRE_EXT_SYS/zorin-taskbar@zorinos.com/metadata.json"
+          bash -c 'source config/tools/mre-apply-lib.sh && mre_purge_obsolete config/obsolete-extensions.txt'
+          [ ! -e "$MRE_EXT_SYS/dash-to-panel@jderose9.github.com" ] || { echo "FALHOU: obsoleta ficou"; exit 1; }
+          [ -f "$MRE_EXT_SYS/zorin-taskbar@zorinos.com/metadata.json" ] || { echo "FALHOU: nova sumiu"; exit 1; }
+          echo PURGE-OK
+
+      - name: Reset/backup/restore em db isolado
+        run: |
+          export DCONF_PROFILE=/tmp/mreprof
+          printf 'user-db:testdb\n' > /tmp/mreprof
+          export XDG_CONFIG_HOME=/tmp/fakecfg
+          mkdir -p /tmp/fakecfg/dconf
+          python3 - <<'EOF'
+          import subprocess
+          # planta valores velhos em algumas chaves da lista
+          subprocess.run(['dconf', 'write', '/org/gnome/shell/favorite-apps', "['velho.desktop']"], check=True)
+          subprocess.run(['dconf', 'write', '/org/gnome/desktop/interface/gtk-theme', "'Adwaita'"], check=True)
+          # backup
+          dump = subprocess.run(['dconf', 'dump', '/'], capture_output=True, text=True).stdout
+          assert 'velho.desktop' in dump, 'backup nao capturou'
+          open('/tmp/mre-backup-test.txt', 'w').write(dump)
+          # reset via lista real
+          for line in open('config/dconf-reset-list.txt'):
+              p = line.strip()
+              if not p or p.startswith('#'):
+                  continue
+              r = subprocess.run(['dconf', 'reset', '-f', p])
+              assert r.returncode == 0, 'reset falhou: ' + p
+          dump2 = subprocess.run(['dconf', 'dump', '/'], capture_output=True, text=True).stdout
+          assert 'velho.desktop' not in dump2, 'reset nao limpou'
+          assert 'Adwaita' not in dump2, 'reset nao limpou tema'
+          # restore
+          subprocess.run(['dconf', 'load', '/'], input=open('/tmp/mre-backup-test.txt').read(), text=True, check=True)
+          dump3 = subprocess.run(['dconf', 'dump', '/'], capture_output=True, text=True).stdout
+          assert 'velho.desktop' in dump3, 'restore nao voltou'
+          print('RESET-BACKUP-RESTORE-OK')
+          EOF
+
+      - name: Temas Zorin instalam de verdade
+        run: |
+          chmod +x config/gnome/install-zorin-themes.sh
+          sudo bash config/gnome/install-zorin-themes.sh
+          [ -d /usr/share/themes/ZorinPurple-Dark ] || { echo "FALHOU: tema gtk"; exit 1; }
+          [ -d /usr/share/icons/ZorinPurple-Dark ] || { echo "FALHOU: icones"; exit 1; }
+          [ -f /usr/share/doc/mrezequielos/LICENSE.zorin-desktop-themes ] || { echo "FALHOU: licenca temas"; exit 1; }
+          [ -f /usr/share/doc/mrezequielos/LICENSE.zorin-icon-themes ] || { echo "FALHOU: licenca icones"; exit 1; }
+          echo TEMAS-OK
+
+      - name: Interface Zorin aplica (valores no dconf)
+        run: |
+          sudo mkdir -p /etc/dconf/db/local.d
+          sudo cp config/gnome/95-mrezequielos /etc/dconf/db/local.d/95-mrezequielos
+          sudo dconf update
+          test "$(dconf read /org/gnome/desktop/interface/gtk-theme)" = "'ZorinPurple-Dark'" || { echo "FALHOU gtk-theme: $(dconf read /org/gnome/desktop/interface/gtk-theme)"; exit 1; }
+          test "$(dconf read /org/gnome/desktop/interface/icon-theme)" = "'ZorinPurple-Dark'" || { echo "FALHOU icon-theme"; exit 1; }
+          test "$(dconf read /org/gnome/desktop/interface/color-scheme)" = "'prefer-dark'" || { echo "FALHOU color-scheme"; exit 1; }
+          dconf read /org/gnome/desktop/background/picture-uri-dark | grep -q mrezequielos-wallpaper || { echo "FALHOU wallpaper"; exit 1; }
+          dconf read /org/gnome/shell/enabled-extensions | grep -q "zorin-taskbar@zorinos.com" || { echo "FALHOU taskbar nos enabled"; exit 1; }
+          dconf read /org/gnome/shell/extensions/zorin-taskbar/panel-positions | grep -q BOTTOM || { echo "FALHOU panel-positions"; exit 1; }
+          dconf read /org/gnome/shell/extensions/arcmenu/menu-layout | grep -q arcmenu || { echo "FALHOU arcmenu layout"; exit 1; }
+          echo INTERFACE-OK
+          sudo rm -f /etc/dconf/db/local.d/95-mrezequielos
+          sudo dconf update

@@ -36,8 +36,9 @@ priv_script() {
   local TAG="$1" OUT="$2"
   cat > "$OUT" <<EOF
 #!/bin/bash
-set -e
 export DEBIAN_FRONTEND=noninteractive
+LOG=/var/log/mrezequielos-update.log
+exec > >(tee -a "$LOG") 2>&1
 REPO="$REPO"
 TAG="$TAG"
 VER_FILE="$VER_FILE"
@@ -48,6 +49,18 @@ echo "# Abrindo pacote..."
 tar xzf "\$TMPD/sys.tar.gz" -C "\$TMPD" || { echo "FALHA-TAR"; rm -rf "\$TMPD"; exit 1; }
 TOP=\$(find "\$TMPD" -maxdepth 1 -type d -name "MrEzequielOSLinux-*" | head -1)
 [ -z "\$TOP" ] && { echo "FALHA-LAYOUT"; rm -rf "\$TMPD"; exit 1; }
+LIB="\$TOP/config/tools/mre-apply-lib.sh"
+[ -f "\$LIB" ] || { echo "FALHA-LIB"; rm -rf "\$TMPD"; exit 1; }
+. "\$LIB"
+echo "# Pre-voo (disco)..."
+[ \$(df --output=avail /tmp | tail -1) -gt 400000 ] || { echo "FALHA-DISCO-TMP"; rm -rf "\$TMPD"; exit 1; }
+[ \$(df --output=avail / | tail -1) -gt 1500000 ] || { echo "FALHA-DISCO-ROOT"; rm -rf "\$TMPD"; exit 1; }
+BACKUP=/var/lib/mrezequielos/backup-\$(cat "\$VER_FILE" 2>/dev/null || echo "?")
+echo "# Backup em \$BACKUP..."
+mkdir -p "\$BACKUP"
+cp /etc/dconf/db/local.d/95-mrezequielos "\$BACKUP/95-local" 2>/dev/null || true
+cp /etc/dconf/db/gdm.d/95-mrezequielos "\$BACKUP/95-gdm" 2>/dev/null || true
+mre_backup_users "\$BACKUP"
 echo "# Aplicando interface e ferramentas..."
 chmod +x "\$TOP/config/gnome/"* "\$TOP/config/tools/"* 2>/dev/null || true
 cp "\$TOP/config/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
@@ -60,11 +73,20 @@ chmod +x /usr/local/bin/mrezequielos-appearance
 cp "\$TOP/config/tools/mrezequielos-appearance-gtk.py" /usr/local/bin/mrezequielos-appearance-gtk
 cp "\$TOP/config/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try-install 2>/dev/null || true
 cp "\$TOP/config/tools/mrezequielos-live-keyring" /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-diagnostico" /usr/local/bin/mrezequielos-diagnostico 2>/dev/null || true
+chmod +x /usr/local/bin/mrezequielos-appearance-gtk /usr/local/bin/mrezequielos-try-install /usr/local/bin/mrezequielos-live-keyring /usr/local/bin/mrezequielos-diagnostico 2>/dev/null || true
+chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
+mkdir -p /usr/share/help/C/mrezequielos-help
+cp "\$TOP/config/help/C/mrezequielos-help/"*.page /usr/share/help/C/mrezequielos-help/ 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-appearance-gtk.py" /usr/local/bin/mrezequielos-appearance-gtk
+cp "\$TOP/config/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try-install 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-live-keyring" /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
 chmod +x /usr/local/bin/mrezequielos-appearance-gtk /usr/local/bin/mrezequielos-try-install /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
 chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
 cp "\$TOP/config/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
+cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
 cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
 cp "\$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
 mkdir -p /usr/share/doc/mrezequielos
@@ -74,31 +96,34 @@ mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d
 cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
 cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
 dconf update || true
-echo "# Limpando modulos obsoletos..."
-while IFS= read -r uuid || [ -n "\$uuid" ]; do
-  case "\$uuid" in ''|\#*) continue ;; esac
-  rm -rf "/usr/share/gnome-shell/extensions/\$uuid"
-  for h in /home/*; do
-    [ -d "\$h" ] && rm -rf "\$h/.local/share/gnome-shell/extensions/\$uuid"
-  done
-  echo "# removido: \$uuid"
-done < "\$TOP/config/obsolete-extensions.txt"
-echo "# Resetando configs velhas (usuarios logados)..."
-for h in /home/*; do
-  U=$(basename "\$h")
-  id "\$U" >/dev/null 2>&1 || continue
-  UIDU=$(id -u "\$U" 2>/dev/null) || continue
-  [ -S "/run/user/\$UIDU/bus" ] || continue
-  while IFS= read -r path || [ -n "\$path" ]; do
-    case "\$path" in ''|\#*) continue ;; esac
-    sudo -u "\$U" env DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/\$UIDU/bus" dconf reset -f "\$path" 2>/dev/null || true
-  done < "\$TOP/config/dconf-reset-list.txt"
-done
-echo "# Reparando extensoes..."
+echo "# Instalando extensoes novas..."
 "\$TOP/config/gnome/install-extensions.sh" || true
+echo "# Instalando temas Zorin..."
+"\$TOP/config/gnome/install-zorin-themes.sh" || true
+echo "# Verificando o novo..."
+THEME_OK=1
+for d in /usr/share/themes/ZorinPurple-Dark /usr/share/icons/ZorinPurple-Dark; do
+  if [ -d "$d" ]; then echo "# tema OK: $d"; else echo "# tema FALTA: $d"; THEME_OK=0; fi
+done
+if mre_verify_required "\$TOP/config/required-extensions.txt" && [ "$THEME_OK" = "1" ]; then
+  echo "# Limpando modulos obsoletos..."
+  mre_purge_obsolete "\$TOP/config/obsolete-extensions.txt"
+  echo "# Resetando configs velhas (usuarios logados)..."
+  mre_reset_users "\$TOP/config/dconf-reset-list.txt"
+else
+  echo "# Novo incompleto: restaurando backup, sem regressao"
+  mre_restore_users "\$BACKUP"
+  cp "\$BACKUP/95-local" /etc/dconf/db/local.d/95-mrezequielos 2>/dev/null || true
+  cp "\$BACKUP/95-gdm" /etc/dconf/db/gdm.d/95-mrezequielos 2>/dev/null || true
+  dconf update 2>/dev/null || true
+  rm -rf "\$TMPD"
+  exit 1
+fi
 sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
 echo "# Atualizando pacotes Ubuntu (demora)..."
 apt update && apt full-upgrade -y || { echo "FALHA-APT"; rm -rf "\$TMPD"; exit 1; }
+echo "# Reinstalando base (auto-reparo)..."
+grep -vE '^[[:space:]]*(#|$)' "\$TOP/config/core-packages.txt" | tr '\n' ' ' | xargs apt install -y 2>/dev/null || echo "# AVISO base parcial"
 echo "\$TAG" > "\$VER_FILE"
 rm -rf "\$TMPD"
 echo "# Pronto!"
@@ -159,7 +184,7 @@ EOFRELS
     rm -f "$FLAG"
     zenity --info --title="MrEzequielOS Update" --text="Versão <b>$PICK</b> aplicada. Saia e entre de novo (ou reinicie)." 2>/dev/null
   else
-    zenity --error --title="MrEzequielOS Update" --text="Falhou. Confira a internet e tente de novo." 2>/dev/null
+    zenity --error --title="MrEzequielOS Update" --text="Falhou. Detalhes em /var/log/mrezequielos-update.log (ou app Diagnóstico)." 2>/dev/null
   fi
 }
 

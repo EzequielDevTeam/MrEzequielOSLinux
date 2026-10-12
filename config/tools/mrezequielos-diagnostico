@@ -36,6 +36,8 @@ update-alternatives --query default.plymouth 2>/dev/null | grep -E "Value:|Best:
 plymouth-set-default-theme 2>/dev/null || echo "(sem plymouth-set-default-theme)"
 echo "--- appearance gtk log ---"
 tail -15 /tmp/mre-appearance.log 2>/dev/null || echo "(sem log do appearance)"
+echo "--- log da ultima atualizacao ---"
+tail -25 /var/log/mrezequielos-update.log 2>/dev/null || echo "(sem log de update)"
 echo "--- journal boot (tail) ---"
 journalctl -b -p err --no-pager 2>/dev/null | tail -10
 echo "=== FIM ==="

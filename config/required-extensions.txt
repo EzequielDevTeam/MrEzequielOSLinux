@@ -1,0 +1,10 @@
+# Extensões que TEM que existir depois de aplicar a versão.
+# Se alguma faltar, a atualização aborta (sem regressão).
+zorin-taskbar@zorinos.com
+arcmenu@arcmenu.com
+blur-my-shell@aunetx
+ding@rastersoft.com
+appindicatorsupport@rgcjonas.gmail.com
+burn-my-windows@schneegans.github.com
+desktop-cube@schneegans.github.com
+dash-to-dock@micxgx.gmail.com

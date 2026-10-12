@@ -1,0 +1,11 @@
+# Pacotes base reinstalados a cada atualização (auto-reparo, igual Zorin).
+# Se o usuário removeu algo daqui sem querer, volta sozinho.
+gnome-core
+gnome-shell
+gnome-session
+gdm3
+gnome-software
+network-manager
+pipewire
+pipewire-pulse
+wireplumber
