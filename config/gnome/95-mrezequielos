@@ -44,7 +44,7 @@ show-running-apps=true
 animate-appicon-hover=true
 
 [org/gnome/shell/extensions/arcmenu]
-menu-layout='11'
+menu-layout='arcmenu'
 menu-button-appearance='Icon'
 menu-button-icon='/usr/share/pixmaps/mrezequielos-start.svg'
 menu-button-icon-size=28

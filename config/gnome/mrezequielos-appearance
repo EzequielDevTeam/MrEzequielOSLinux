@@ -32,7 +32,7 @@ apply_windows() {
   dconf write /org/gnome/shell/extensions/dash-to-panel/trans-use-custom-opacity true || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/trans-panel-opacity 0.75 || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/isolate-workspaces true || true
-  dconf write /org/gnome/shell/extensions/arcmenu/menu-layout "'11'" || true
+  dconf write /org/gnome/shell/extensions/arcmenu/menu-layout "'arcmenu'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-appearance "'Icon'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'/usr/share/pixmaps/mrezequielos-start.svg'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon-size 28 || true
