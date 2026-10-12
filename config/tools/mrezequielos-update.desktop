@@ -3,6 +3,6 @@ Name=Atualização do Sistema
 Comment=Atualizar o MrEzequielOS sem apagar nada (OTA)
 Exec=pkexec mrezequielos-update
 Icon=system-software-update
-Terminal=false
+Terminal=true
 Type=Application
 Categories=Settings;System;

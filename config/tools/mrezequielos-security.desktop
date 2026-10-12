@@ -3,6 +3,6 @@ Name=Segurança MrEzequielOS
 Comment=Firewall + atualizações automáticas + endurecimento
 Exec=pkexec mrezequielos-security
 Icon=security-high
-Terminal=false
+Terminal=true
 Type=Application
 Categories=Settings;Security;
