@@ -128,6 +128,8 @@ jobs:
           printf 'user-db:testdb\n' > /tmp/mreprof
           export XDG_CONFIG_HOME=/tmp/fakecfg
           mkdir -p /tmp/fakecfg/dconf
+          which dconf; dconf --version 2>&1 | head -1
+          env | grep -iE "^(DBUS|XDG|DCONF)" || true
           python3 - <<'EOF'
           import subprocess
           # planta valores velhos em algumas chaves da lista
@@ -135,6 +137,10 @@ jobs:
           subprocess.run(['dconf', 'write', '/org/gnome/desktop/interface/gtk-theme', "'Adwaita'"], check=True)
           # backup
           dump = subprocess.run(['dconf', 'dump', '/'], capture_output=True, text=True).stdout
+          print('DUMP-LEN:', len(dump))
+          print('DUMP-CONTENT:', repr(dump[:300]))
+          import os
+          print('DBDIR:', os.listdir('/tmp/fakecfg/dconf'))
           assert 'velho.desktop' in dump, 'backup nao capturou'
           open('/tmp/mre-backup-test.txt', 'w').write(dump)
           # reset via lista real
