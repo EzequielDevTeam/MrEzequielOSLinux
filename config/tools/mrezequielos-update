@@ -1,62 +1,137 @@
 #!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # MrEzequielOS - (c) EzequielDevTeam. Veja LICENSE e TRADEMARK.md.
-# MrEzequielOS Update - atualizador próprio (OTA, sem apagar o sistema)
-# Como funciona (igual ao modelo do Zorin OS, fonte: help.zorin.com):
-#  - Apps e pacotes Ubuntu: pela Loja (GNOME Software) + segurança automática.
-#  - Camada MrEzequielOS (interface, ferramentas, marca): este app baixa o
-#    pacote da versão publicada no GitHub (tag vX.Y) e aplica por cima,
-#    depois roda o upgrade do Ubuntu. Nada é apagado.
+# MrEzequielOS Update - atualizador próprio com JANELA (igual Zorin, sem terminal).
+# A interface roda como usuário; só o motor usa root (uma senha só).
 # Uso: mrezequielos-update [--check|--notify]
 REPO="EzequielDevTeam/MrEzequielOSLinux"
 VER_FILE="/etc/mrezequielos-version"
 FLAG="/var/lib/mrezequielos/update-available"
-CUR=$(cat "$VER_FILE" 2>/dev/null || echo "1.0")
-API="https://api.github.com/repos/$REPO/releases/latest"
+CUR=$(cat "$VER_FILE" 2>/dev/null || echo "1.1")
+API="https://api.github.com/repos/$REPO"
 
 latest_tag() {
-  curl -s --max-time 25 "$API" 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('tag_name',''))" 2>/dev/null || echo ""
+  curl -s --max-time 25 "$API/releases/latest" 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('tag_name',''))" 2>/dev/null || echo ""
 }
 is_newer() { [ -n "$1" ] && [ "$1" != "$CUR" ] && [ "$(printf '%s\n%s' "$CUR" "$1" | sort -V | tail -1)" = "$1" ]; }
 
-apply_release() {
-  TAG="$1"
-  TMPD=$(mktemp -d) || return 1
-  URL="https://github.com/$REPO/archive/refs/tags/v$TAG.tar.gz"
-  echo "Baixando camada MrEzequielOS $TAG..."
-  curl -sL --retry 2 --max-time 180 -o "$TMPD/sys.tar.gz" "$URL" || { echo "Download falhou"; rm -rf "$TMPD"; return 1; }
-  tar xzf "$TMPD/sys.tar.gz" -C "$TMPD" || { echo "Tarball inválido"; rm -rf "$TMPD"; return 1; }
-  TOP=$(find "$TMPD" -maxdepth 1 -type d -name "MrEzequielOSLinux-*" | head -1)
-  [ -z "$TOP" ] && { echo "Layout inesperado"; rm -rf "$TMPD"; return 1; }
-  echo "Aplicando interface e ferramentas..."
-  chmod +x "$TOP/config/gnome/"* "$TOP/config/tools/"* 2>/dev/null || true
-  cp "$TOP/config/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
-  cp "$TOP/config/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
-  chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security
-  cp "$TOP/config/tools/mrezequielos-update.desktop" /usr/share/applications/ 2>/dev/null || true
-  cp "$TOP/config/tools/mrezequielos-security.desktop" /usr/share/applications/ 2>/dev/null || true
-  cp "$TOP/config/tools/mrezequielos-appearance.desktop" /usr/share/applications/ 2>/dev/null || true
-  cp "$TOP/config/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true
-  cp "$TOP/config/gnome/mrezequielos-appearance" /usr/local/bin/mrezequielos-appearance
-  chmod +x /usr/local/bin/mrezequielos-appearance
-  cp "$TOP/config/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
-  cp "$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
-  cp "$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
-  cp "$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
-  mkdir -p /usr/share/doc/mrezequielos
-  cp "$TOP/LICENSE" /usr/share/doc/mrezequielos/LICENSE 2>/dev/null || true
-  cp "$TOP/TRADEMARK.md" /usr/share/doc/mrezequielos/TRADEMARK.md 2>/dev/null || true
-  mkdir -p /etc/dconf/db/gdm.d
-  cp "$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
-  dconf update || true
-  echo "Reparando extensões..."
-  "$TOP/config/gnome/install-extensions.sh" || echo "AVISO extensões"
-  echo "Upgrade de pacotes Ubuntu..."
-  sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
-  apt update && apt full-upgrade -y || { echo "apt falhou"; rm -rf "$TMPD"; return 1; }
-  echo "$TAG" > "$VER_FILE"
-  rm -rf "$TMPD"
-  return 0
+list_releases() {
+  curl -s --max-time 25 "$API/releases?per_page=20" 2>/dev/null | python3 -c "
+import json, sys
+try:
+    rels = json.load(sys.stdin)
+except Exception:
+    sys.exit(1)
+for r in rels:
+    if r.get('draft') or r.get('prerelease'):
+        continue
+    tag = (r.get('tag_name') or '').lstrip('v')
+    name = (r.get('name') or tag).replace('|', '-')
+    date = (r.get('published_at') or '')[:10]
+    print('%s|%s|%s' % (tag, name, date))
+" 2>/dev/null || echo ""
+}
+
+priv_script() {
+  local TAG="$1" OUT="$2"
+  cat > "$OUT" <<EOF
+#!/bin/bash
+set -e
+export DEBIAN_FRONTEND=noninteractive
+REPO="$REPO"
+TAG="$TAG"
+VER_FILE="$VER_FILE"
+TMPD=\$(mktemp -d)
+echo "# Baixando MrEzequielOS \$TAG..."
+curl -sL --retry 2 --max-time 180 -o "\$TMPD/sys.tar.gz" "https://github.com/\$REPO/archive/refs/tags/v\$TAG.tar.gz" || { echo "FALHA-DOWNLOAD"; rm -rf "\$TMPD"; exit 1; }
+echo "# Abrindo pacote..."
+tar xzf "\$TMPD/sys.tar.gz" -C "\$TMPD" || { echo "FALHA-TAR"; rm -rf "\$TMPD"; exit 1; }
+TOP=\$(find "\$TMPD" -maxdepth 1 -type d -name "MrEzequielOSLinux-*" | head -1)
+[ -z "\$TOP" ] && { echo "FALHA-LAYOUT"; rm -rf "\$TMPD"; exit 1; }
+echo "# Aplicando interface e ferramentas..."
+chmod +x "\$TOP/config/gnome/"* "\$TOP/config/tools/"* 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
+cp "\$TOP/config/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
+chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security
+cp "\$TOP/config/tools/"*.desktop /usr/share/applications/ 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true
+cp "\$TOP/config/gnome/mrezequielos-appearance" /usr/local/bin/mrezequielos-appearance
+chmod +x /usr/local/bin/mrezequielos-appearance
+cp "\$TOP/config/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
+cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
+cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
+cp "\$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
+mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d
+cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
+cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
+dconf update || true
+echo "# Reparando extensoes..."
+"\$TOP/config/gnome/install-extensions.sh" || true
+sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
+echo "# Atualizando pacotes Ubuntu (demora)..."
+apt update && apt full-upgrade -y || { echo "FALHA-APT"; rm -rf "\$TMPD"; exit 1; }
+echo "\$TAG" > "\$VER_FILE"
+rm -rf "\$TMPD"
+echo "# Pronto!"
+EOF
+  chmod +x "$OUT"
+}
+
+run_priv() {
+  local TAG="$1"
+  local SCR
+  SCR=$(mktemp /tmp/mre-apply-XXXXXX.sh)
+  priv_script "$TAG" "$SCR"
+  local RC=0
+  if [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; then
+    pkexec bash "$SCR" 2>&1 | zenity --progress --pulsate --auto-close --no-cancel \
+      --title="MrEzequielOS Update" --text="Iniciando..." --width=450 2>/dev/null
+    RC=${PIPESTATUS[0]}
+  else
+    sudo bash "$SCR"; RC=$?
+  fi
+  rm -f "$SCR"
+  return $RC
+}
+
+gui() {
+  local RELS ROWS=() TAG NAME DATE ST
+  RELS=$(list_releases)
+  if [ -z "$RELS" ]; then
+    zenity --info --title="MrEzequielOS Update" --text="Sem internet ou sem releases.\nVersão atual: <b>$CUR</b>." 2>/dev/null
+    return 0
+  fi
+  while IFS='|' read -r TAG NAME DATE; do
+    [ -z "$TAG" ] && continue
+    if [ "$TAG" = "$CUR" ]; then ST="instalada (reaplicar)"; SEL="FALSE";
+    elif is_newer "$TAG"; then ST="nova!"; SEL="TRUE";
+    else continue; fi
+    ROWS+=("$SEL" "$TAG" "$NAME" "$DATE" "$ST")
+  done <<EOFRELS
+$RELS
+EOFRELS
+  if [ ${#ROWS[@]} -eq 0 ]; then
+    zenity --info --title="MrEzequielOS Update" --text="Nada novo. Versão: <b>$CUR</b>." 2>/dev/null
+    rm -f "$FLAG"
+    return 0
+  fi
+  local PICK
+  PICK=$(zenity --list --radiolist --title="MrEzequielOS Update" \
+    --text="Escolha a versão (atual: <b>$CUR</b>):" \
+    --column="" --column="Versão" --column="Nome" --column="Data" --column="" \
+    "${ROWS[@]}" --width=620 --height=320 2>/dev/null) || return 0
+  [ -z "$PICK" ] && return 0
+  if ! zenity --question --title="MrEzequielOS Update" \
+    --text="Aplicar a versão <b>$PICK</b>? Nada será apagado." 2>/dev/null; then
+    xdg-open "https://github.com/$REPO/releases" 2>/dev/null || true
+    return 0
+  fi
+  if run_priv "$PICK"; then
+    rm -f "$FLAG"
+    zenity --info --title="MrEzequielOS Update" --text="Versão <b>$PICK</b> aplicada. Saia e entre de novo (ou reinicie)." 2>/dev/null
+  else
+    zenity --error --title="MrEzequielOS Update" --text="Falhou. Confira a internet e tente de novo." 2>/dev/null
+  fi
 }
 
 case "$1" in
@@ -70,38 +145,15 @@ case "$1" in
     if [ -f "$FLAG" ]; then
       TAG=$(cat "$FLAG")
       notify-send "MrEzequielOS Update" "Nova versão disponível: $TAG (atual: $CUR). Abra Atualização do Sistema." -i system-software-update 2>/dev/null || true
-      zenity --info --title="MrEzequielOS Update" --text="Nova versão disponível: <b>$TAG</b> (atual: $CUR).\nAbra <b>Atualização do Sistema</b> para atualizar sem perder nada." 2>/dev/null || echo "Atualização disponível: $TAG"
+      zenity --info --title="MrEzequielOS Update" --text="Nova versão disponível: <b>$TAG</b> (atual: $CUR).\nAbra <b>Atualização do Sistema</b>." 2>/dev/null || echo "Atualização disponível: $TAG"
     fi
     exit 0
     ;;
 esac
 
-if ! command -v zenity >/dev/null; then
-  echo "Versão atual: $CUR"
+if ! command -v zenity >/dev/null || { [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; }; then
+  echo "Versão atual: $CUR (modo texto)"
   sudo apt update && sudo apt full-upgrade -y
   exit $?
 fi
-TAG=$(latest_tag); TAG="${TAG#v}"
-if [ -z "$TAG" ]; then
-  zenity --info --title="MrEzequielOS Update" --text="Não consegui verificar agora (sem internet?).\nVersão atual: <b>$CUR</b>." 2>/dev/null
-  exit 0
-fi
-if ! is_newer "$TAG"; then
-  zenity --info --title="MrEzequielOS Update" --text="Seu sistema já está atualizado. Versão: <b>$CUR</b>." 2>/dev/null
-  if zenity --question --title="MrEzequielOS Update" --text="Buscar atualizações de pacotes e apps do Ubuntu agora? (igual o Zorin faz no Software Updater)" 2>/dev/null; then
-    sudo sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
-    sudo apt update && sudo apt full-upgrade -y
-  fi
-  rm -f "$FLAG"
-  exit 0
-fi
-if zenity --question --title="MrEzequielOS Update" --text="Nova versão do sistema: <b>$TAG</b> (atual: $CUR).\nBaixar e aplicar agora? Nada será apagado." 2>/dev/null; then
-  if apply_release "$TAG"; then
-    rm -f "$FLAG"
-    zenity --info --title="MrEzequielOS Update" --text="Atualização para <b>$TAG</b> concluída. Saia e entre de novo (ou reinicie) para aplicar tudo." 2>/dev/null
-  else
-    zenity --error --title="MrEzequielOS Update" --text="Falha ao aplicar a $TAG. Verifique a internet e tente de novo." 2>/dev/null
-  fi
-else
-  xdg-open "https://github.com/$REPO/releases" 2>/dev/null || true
-fi
+gui

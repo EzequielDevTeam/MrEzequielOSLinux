@@ -1,31 +1,66 @@
 #!/bin/bash
-# MrEzequielOS Security - pacote próprio de segurança (firewall + updates automáticos + endurecimento)
-# Uso interativo (pede root via pkexec no .desktop) ou: sudo mrezequielos-security
-if [ "$(id -u)" != "0" ]; then
-  echo "Precisa de root. Rode: sudo mrezequielos-security"
-  exit 1
+# SPDX-License-Identifier: GPL-3.0-or-later
+# MrEzequielOS - (c) EzequielDevTeam. Veja LICENSE e TRADEMARK.md.
+# Segurança MrEzequielOS com JANELA (igual Zorin, sem terminal).
+# A interface roda como usuário; só o motor usa root (uma senha só).
+if ! command -v zenity >/dev/null || { [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; }; then
+  echo "Sem tela grafica. Rode: sudo $0 --cli"
+  [ "$1" = "--cli" ] || exit 1
 fi
-say() { echo "[segurança] $1"; }
 
-say "Firewall (ufw)..."
-apt install -y ufw unattended-upgrades 2>/dev/null || true
-ufw --force enable 2>/dev/null || true
-ufw default deny incoming 2>/dev/null || true
-ufw default allow outgoing 2>/dev/null || true
-systemctl enable ufw 2>/dev/null || true
+st_ufw() { ufw status 2>/dev/null | grep -q "Status: active" && echo TRUE || echo FALSE; }
+st_auto() { [ -f /etc/apt/apt.conf.d/20auto-upgrades ] && grep -q 'Unattended-Upgrade "1"' /etc/apt/apt.conf.d/20auto-upgrades 2>/dev/null && echo TRUE || echo FALSE; }
+st_sys() { [ -f /etc/sysctl.d/99-mrezequielos.conf ] && echo TRUE || echo FALSE; }
+st_tel() { dpkg -s apport >/dev/null 2>&1 || dpkg -s whoopsie >/dev/null 2>&1; [ $? -ne 0 ] && echo TRUE || echo FALSE; }
 
-say "Atualizações automáticas de segurança..."
-cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
+if [ "$1" = "--cli" ]; then
+  FW=1; AU=1; SYS=1; TEL=1
+else
+  SEL=$(zenity --list --checklist --title="Segurança MrEzequielOS" \
+    --text="Marque as proteções (pede a senha uma vez só):" \
+    --column="" --column="Proteção" --column="O que faz" \
+    $(st_ufw) "firewall" "Bloqueia conexões de entrada da rede" \
+    $(st_auto) "automaticas" "Correções de segurança todo dia, sozinhas" \
+    $(st_sys) "kernel" "Endurece o kernel contra ataques comuns" \
+    $(st_tel) "privacidade" "Remove telemetria (Apport/Whoopsie)" \
+    --separator=" " --width=600 --height=300 2>/dev/null) || exit 0
+  FW=0; AU=0; SYS=0; TEL=0
+  for s in $SEL; do
+    case "$s" in
+      firewall) FW=1 ;; automaticas) AU=1 ;; kernel) SYS=1 ;; privacidade) TEL=1 ;;
+    esac
+  done
+  [ "$FW$AU$SYS$TEL" = "0000" ] && exit 0
+fi
+
+SCR=$(mktemp /tmp/mre-sec-XXXXXX.sh)
+cat > "$SCR" <<EOF
+#!/bin/bash
+export DEBIAN_FRONTEND=noninteractive
+FW=$FW
+AU=$AU
+SYS=$SYS
+TEL=$TEL
+if [ "\$FW" = "1" ]; then
+  echo "# Firewall..."
+  apt install -y ufw 2>/dev/null || true
+  ufw --force enable 2>/dev/null || true
+  ufw default deny incoming 2>/dev/null || true
+  ufw default allow outgoing 2>/dev/null || true
+fi
+if [ "\$AU" = "1" ]; then
+  echo "# Updates automaticos..."
+  apt install -y unattended-upgrades 2>/dev/null || true
+  cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF2'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Download-Upgradeable-Packages "1";
 APT::Periodic::AutocleanInterval "7";
 APT::Periodic::Unattended-Upgrade "1";
-EOF
-systemctl enable unattended-upgrades 2>/dev/null || true
-
-say "Endurecimento do kernel (sysctl)..."
-cat > /etc/sysctl.d/99-mrezequielos.conf <<'EOF'
-# MrEzequielOS - endurecimento leve (não quebra desktop)
+EOF2
+fi
+if [ "\$SYS" = "1" ]; then
+  echo "# Endurecendo kernel..."
+  cat > /etc/sysctl.d/99-mrezequielos.conf <<'EOF2'
 kernel.kptr_restrict=2
 kernel.dmesg_restrict=1
 kernel.unprivileged_bpf_disabled=2
@@ -36,11 +71,29 @@ net.ipv4.icmp_echo_ignore_broadcasts=1
 kernel.yama.ptrace_scope=1
 fs.protected_hardlinks=1
 fs.protected_symlinks=1
+EOF2
+  sysctl --system 2>/dev/null || true
+fi
+if [ "\$TEL" = "1" ]; then
+  echo "# Limpando telemetria..."
+  apt purge -y apport whoopsie popularity-contest 2>/dev/null || true
+fi
+echo "# Pronto!"
 EOF
-sysctl --system 2>/dev/null || true
+chmod +x "$SCR"
 
-say "Limpando telemetria..."
-apt purge -y apport whoopsie popularity-contest 2>/dev/null || true
-
-say "OK - proteção ativa: firewall + updates automáticos + sysctl."
-command -v zenity >/dev/null && sudo -u "${SUDO_USER:-$USER}" zenity --info --title="MrEzequielOS Segurança" --text="Proteção ativa:\n• Firewall ligado\n• Atualizações automáticas ligadas\n• Kernel endurecido" 2>/dev/null || true
+if [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; then
+  pkexec bash "$SCR" 2>&1 | zenity --progress --pulsate --auto-close --no-cancel \
+    --title="Segurança MrEzequielOS" --text="Aplicando..." --width=450 2>/dev/null
+  RC=${PIPESTATUS[0]}
+  rm -f "$SCR"
+  if [ $RC -eq 0 ]; then
+    zenity --info --title="Segurança MrEzequielOS" --text="Proteção ativa." 2>/dev/null
+  else
+    zenity --error --title="Segurança MrEzequielOS" --text="Falhou (senha errada ou sem internet?)." 2>/dev/null
+  fi
+else
+  sudo bash "$SCR"; RC=$?
+  rm -f "$SCR"
+  [ $RC -eq 0 ] && echo "Proteção ativa." || echo "Falhou."
+fi
