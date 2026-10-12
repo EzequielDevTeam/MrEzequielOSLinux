@@ -1,0 +1,3 @@
+# Extensões obsoletas: removidas na atualização (uma por linha, # = comentário).
+# Motivo: trocar de extensão sem limpar deixa duas brigando (ex.: dash + taskbar).
+dash-to-panel@jderose9.github.com

@@ -34,6 +34,8 @@ ls -l /etc/dconf/db/ /etc/dconf/db/local.d/ /etc/dconf/db/gdm.d/ 2>&1
 echo "--- plymouth ---"
 update-alternatives --query default.plymouth 2>/dev/null | grep -E "Value:|Best:"
 plymouth-set-default-theme 2>/dev/null || echo "(sem plymouth-set-default-theme)"
+echo "--- appearance gtk log ---"
+tail -15 /tmp/mre-appearance.log 2>/dev/null || echo "(sem log do appearance)"
 echo "--- journal boot (tail) ---"
 journalctl -b -p err --no-pager 2>/dev/null | tail -10
 echo "=== FIM ==="

@@ -57,14 +57,43 @@ cp "\$TOP/config/tools/"*.desktop /usr/share/applications/ 2>/dev/null || true
 cp "\$TOP/config/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true
 cp "\$TOP/config/gnome/mrezequielos-appearance" /usr/local/bin/mrezequielos-appearance
 chmod +x /usr/local/bin/mrezequielos-appearance
+cp "\$TOP/config/tools/mrezequielos-appearance-gtk.py" /usr/local/bin/mrezequielos-appearance-gtk
+cp "\$TOP/config/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try-install 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-live-keyring" /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
+chmod +x /usr/local/bin/mrezequielos-appearance-gtk /usr/local/bin/mrezequielos-try-install /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
+chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
 cp "\$TOP/config/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
+cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
 cp "\$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
+mkdir -p /usr/share/doc/mrezequielos
+cp "\$TOP/LICENSE" /usr/share/doc/mrezequielos/LICENSE 2>/dev/null || true
+cp "\$TOP/TRADEMARK.md" /usr/share/doc/mrezequielos/TRADEMARK.md 2>/dev/null || true
 mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d
 cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
 cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
 dconf update || true
+echo "# Limpando modulos obsoletos..."
+while IFS= read -r uuid || [ -n "\$uuid" ]; do
+  case "\$uuid" in ''|\#*) continue ;; esac
+  rm -rf "/usr/share/gnome-shell/extensions/\$uuid"
+  for h in /home/*; do
+    [ -d "\$h" ] && rm -rf "\$h/.local/share/gnome-shell/extensions/\$uuid"
+  done
+  echo "# removido: \$uuid"
+done < "\$TOP/config/obsolete-extensions.txt"
+echo "# Resetando configs velhas (usuarios logados)..."
+for h in /home/*; do
+  U=$(basename "\$h")
+  id "\$U" >/dev/null 2>&1 || continue
+  UIDU=$(id -u "\$U" 2>/dev/null) || continue
+  [ -S "/run/user/\$UIDU/bus" ] || continue
+  while IFS= read -r path || [ -n "\$path" ]; do
+    case "\$path" in ''|\#*) continue ;; esac
+    sudo -u "\$U" env DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/\$UIDU/bus" dconf reset -f "\$path" 2>/dev/null || true
+  done < "\$TOP/config/dconf-reset-list.txt"
+done
 echo "# Reparando extensoes..."
 "\$TOP/config/gnome/install-extensions.sh" || true
 sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
