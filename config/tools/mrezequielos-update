@@ -75,6 +75,7 @@ cp "\$TOP/config/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try
 cp "\$TOP/config/tools/mrezequielos-live-keyring" /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
 cp "\$TOP/config/tools/mrezequielos-diagnostico" /usr/local/bin/mrezequielos-diagnostico 2>/dev/null || true
 chmod +x /usr/local/bin/mrezequielos-appearance-gtk /usr/local/bin/mrezequielos-try-install /usr/local/bin/mrezequielos-live-keyring /usr/local/bin/mrezequielos-diagnostico 2>/dev/null || true
+rm -f /usr/local/bin/mrezequielos-test-installer /usr/share/applications/mrezequielos-test-installer.desktop 2>/dev/null || true
 chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
 mkdir -p /usr/share/help/C/mrezequielos-help
 cp "\$TOP/config/help/C/mrezequielos-help/"*.page /usr/share/help/C/mrezequielos-help/ 2>/dev/null || true
@@ -189,6 +190,15 @@ EOFRELS
 }
 
 case "$1" in
+  --do-apply)
+    shift; TAG="$1"
+    [ -z "$TAG" ] && { echo "FALHA: sem versao"; exit 1; }
+    SCR=$(mktemp /tmp/mre-apply-XXXXXX.sh)
+    priv_script "$TAG" "$SCR"
+    bash "$SCR"; RC=$?
+    rm -f "$SCR"
+    exit $RC
+    ;;
   --check)
     mkdir -p /var/lib/mrezequielos
     TAG=$(latest_tag); TAG="${TAG#v}"

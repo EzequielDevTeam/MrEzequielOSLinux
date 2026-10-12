@@ -1,4 +1,0 @@
-#!/bin/bash
-# MrEzequielOS - abre o instalador dentro de um terminal para ver erros.
-# Se o instalador não abrir pelo ícone, rode este app e fotografe a janela.
-gnome-terminal --title="Teste do Instalador" -- bash -c 'echo "=== ubiquity (foto desta janela se algo falhar) ==="; ubiquity; echo "--- saiu com codigo $? ---"; read -p "Enter para fechar"' 2>/dev/null || ubiquity &

@@ -111,12 +111,11 @@ chmod +x "$BASE/tools/"* 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
 cp "$BASE/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
 cp "$BASE/tools/mrezequielos-diagnostico" /usr/local/bin/mrezequielos-diagnostico
-cp "$BASE/tools/mrezequielos-test-installer" /usr/local/bin/mrezequielos-test-installer
-chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico /usr/local/bin/mrezequielos-test-installer
+chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico
 cp "$BASE/tools/mrezequielos-update.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-security.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-diagnostico.desktop" /usr/share/applications/ 2>/dev/null || true
-cp "$BASE/tools/mrezequielos-test-installer.desktop" /usr/share/applications/ 2>/dev/null || true
+rm -f /usr/local/bin/mrezequielos-test-installer /usr/share/applications/mrezequielos-test-installer.desktop 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-appearance.desktop" /usr/share/applications/ 2>/dev/null || true
 mkdir -p /etc/xdg/autostart
 cp "$BASE/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/null || true
@@ -161,10 +160,10 @@ cp "$BASE/tools/mrezequielos-appearance-gtk.py" /usr/local/bin/mrezequielos-appe
 chmod +x /usr/local/bin/mrezequielos-appearance-gtk
 
 echo "[visual] Zorin Connect (GSConnect) ativado por padrão."
-echo "[visual] Base vira MrEzequielOS (lsb-release nosso, icone nosso no updater)..."
+echo "[visual] Base MrEzequielOS (nome nosso, numero valido)..."
 cat > /etc/lsb-release <<'EOF'
 DISTRIB_ID=MrEzequielOS
-DISTRIB_RELEASE=1.1.2
+DISTRIB_RELEASE=24.04
 DISTRIB_CODENAME=noble
 DISTRIB_DESCRIPTION="MrEzequielOS 1.1.2"
 EOF

@@ -57,6 +57,23 @@ def gs(schema, path=None):
     return Gio.Settings(schema)
 
 
+def schema_ok(schema):
+    try:
+        src = Gio.SettingsSchemaSource.get_default()
+        return src is not None and src.lookup(schema, True) is not None
+    except Exception:
+        return False
+
+
+def ext_gs(schema, path):
+    if not schema_ok(schema):
+        return None
+    try:
+        return Gio.Settings.new_with_path(schema, path)
+    except Exception:
+        return None
+
+
 def iface():
     return gs('org.gnome.desktop.interface')
 
@@ -66,13 +83,18 @@ def shell():
 
 
 def dtp():
-    return gs('org.gnome.shell.extensions.zorin-taskbar',
-              '/org/gnome/shell/extensions/zorin-taskbar/')
+    return ext_gs('org.gnome.shell.extensions.zorin-taskbar',
+                  '/org/gnome/shell/extensions/zorin-taskbar/')
 
 
 def arc():
-    return gs('org.gnome.shell.extensions.arcmenu',
-              '/org/gnome/shell/extensions/arcmenu/')
+    return ext_gs('org.gnome.shell.extensions.arcmenu',
+                  '/org/gnome/shell/extensions/arcmenu/')
+
+
+def ding_gs():
+    return ext_gs('org.gnome.shell.extensions.ding',
+                  '/org/gnome/shell/extensions/ding/')
 
 
 def ls_dirs(path):
@@ -91,8 +113,10 @@ def apply_layout(name):
                           'user-theme@gnome-shell-extensions.gcampax.github.com',
                           'dash-to-dock@micxgx.gmail.com'])
         try:
-            d = gs('org.gnome.shell.extensions.dash-to-dock',
-                   '/org/gnome/shell/extensions/dash-to-dock/')
+            d = ext_gs('org.gnome.shell.extensions.dash-to-dock',
+                       '/org/gnome/shell/extensions/dash-to-dock/')
+            if d is None:
+                raise Exception('sem schema')
             d.set_string('dock-position', 'BOTTOM')
             d.set_boolean('extend-height', False)
         except Exception:
@@ -115,29 +139,28 @@ def apply_layout(name):
                                                              'ding@rastersoft.com'])
         shell().set_boolean('disable-user-extensions', False)
         d = dtp()
-        d.set_string('panel-positions', '{"0": "BOTTOM"}')
-        d.set_string('panel-sizes', '{"0": 48}')
-        d.set_string('panel-element-positions', DTB_POSITIONS)
-        d.set_int('global-border-radius', 12)
-        d.set_boolean('trans-use-custom-opacity', True)
-        d.set_double('trans-panel-opacity', 0.75)
-        d.set_boolean('isolate-workspaces', True)
+        if d is not None:
+            d.set_string('panel-positions', '{"0": "BOTTOM"}')
+            d.set_string('panel-sizes', '{"0": 48}')
+            d.set_string('panel-element-positions', DTB_POSITIONS)
+            d.set_int('global-border-radius', 12)
+            d.set_boolean('trans-use-custom-opacity', True)
+            d.set_double('trans-panel-opacity', 0.75)
+            d.set_boolean('isolate-workspaces', True)
     a = arc()
-    a.set_string('menu-button-appearance', 'Icon')
-    if os.path.exists(START_ICON):
-        a.set_string('menu-button-icon', START_ICON)
-    a.set_int('menu-button-icon-size', 28)
-    try:
-        a.set_boolean('show-activities-button', False)
-    except Exception:
-        pass
-    try:
-        ding = gs('org.gnome.shell.extensions.ding',
-                  '/org/gnome/shell/extensions/ding/')
+    if a is not None:
+        a.set_string('menu-button-appearance', 'Icon')
+        if os.path.exists(START_ICON):
+            a.set_string('menu-button-icon', START_ICON)
+        a.set_int('menu-button-icon-size', 28)
+        try:
+            a.set_boolean('show-activities-button', False)
+        except Exception:
+            pass
+    ding = ding_gs()
+    if ding is not None:
         ding.set_boolean('show-home', True)
         ding.set_boolean('show-trash', True)
-    except Exception:
-        pass
 
 
 class AppearanceApp(Adw.Application):
@@ -303,22 +326,27 @@ class AppearanceWindow(Adw.ApplicationWindow):
 
     def page_desktop(self):
         page, group = self.pref_page()
-        try:
-            ding = gs('org.gnome.shell.extensions.ding',
-                      '/org/gnome/shell/extensions/ding/')
-            for key, title in (('show-home', 'Pasta pessoal no desktop'),
-                               ('show-trash', 'Lixeira no desktop')):
-                row = Adw.SwitchRow.new()
-                row.set_title(title)
-                try:
-                    row.set_active(ding.get_boolean(key))
-                except Exception:
-                    pass
-                row.connect('notify::active',
-                            lambda r, p, k=key: ding.set_boolean(k, r.get_active()))
-                group.add(row)
-        except Exception:
-            pass
+        ding = ding_gs()
+        if ding is None:
+            row = Adw.ActionRow.new()
+            row.set_title('Ícones no desktop indisponíveis')
+            row.set_subtitle('Ative a extensão Ding nos Efeitos e abra de novo')
+            group.add(row)
+        else:
+            try:
+                for key, title in (('show-home', 'Pasta pessoal no desktop'),
+                                   ('show-trash', 'Lixeira no desktop')):
+                    row = Adw.SwitchRow.new()
+                    row.set_title(title)
+                    try:
+                        row.set_active(ding.get_boolean(key))
+                    except Exception:
+                        pass
+                    row.connect('notify::active',
+                                lambda r, p, k=key: ding.set_boolean(k, r.get_active()))
+                    group.add(row)
+            except Exception:
+                pass
         tap = Adw.SwitchRow.new()
         tap.set_title('Toque para clicar')
         tap.set_subtitle('Touchpad')

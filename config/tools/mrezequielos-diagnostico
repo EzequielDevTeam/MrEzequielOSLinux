@@ -23,8 +23,10 @@ echo "--- extensoes DESLIGADAS ---"
 gnome-extensions list --disabled 2>&1
 echo "--- estado de cada extensao nossa ---"
 for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com; do echo "[$u]"; gnome-extensions show "$u" 2>&1 | grep -a -E "State|Error|Versão|Version" | head -4; done
-echo "--- chaves reais dos schemas ---"
-for s in org.gnome.shell.extensions.arcmenu org.gnome.shell.extensions.zorin-taskbar org.gnome.shell.extensions.ding org.gnome.shell.extensions.blur-my-shell; do echo "[$s]"; gsettings list-keys $s 2>&1 | tr '\n' ' '; echo; done
+echo "--- schemas das extensoes (compilados?) ---"
+for u in arcmenu@arcmenu.com zorin-taskbar@zorinos.com ding@rastersoft.com blur-my-shell@aunetx; do
+  if [ -f "/usr/share/gnome-shell/extensions/$u/schemas/gschemas.compiled" ]; then echo "OK $u"; else echo "FALTA schema $u"; fi
+done
 echo "--- ubiquity abre? ---"
 timeout 10 ubiquity --help >/dev/null 2>&1 && echo "ubiquity --help OK" || echo "ubiquity --help FALHOU"
 echo "--- erros das extensões (sessão atual) ---"
