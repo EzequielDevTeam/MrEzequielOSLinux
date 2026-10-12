@@ -1,8 +1,8 @@
 # MrEzequielOS - padrões do desktop estilo Zorin (layout Windows)
 # Instalado em /etc/dconf/db/gdm.d/ pelo apply-theme.sh. Rode `dconf update` depois.
 [org/gnome/desktop/interface]
-gtk-theme='Yaru-dark'
-icon-theme='Papirus-Dark'
+gtk-theme='ZorinPurple-Dark'
+icon-theme='ZorinPurple-Dark'
 cursor-theme='Yaru'
 color-scheme='prefer-dark'
 accent-color='purple'
@@ -21,7 +21,7 @@ picture-uri='file:///usr/share/backgrounds/mrezequielos-wallpaper.svg'
 lock-enabled=true
 
 [org/gnome/desktop/wm/preferences]
-theme='Yaru-dark'
+theme='ZorinPurple-Dark'
 button-layout='close,minimize,maximize:'
 
 [org/gnome/shell]

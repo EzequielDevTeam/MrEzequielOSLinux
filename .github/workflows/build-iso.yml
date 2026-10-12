@@ -72,6 +72,7 @@ jobs:
           update-alternatives --set default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth || echo "AVISO plymouth"
           update-alternatives --query default.plymouth | grep -E "Value:" || true
           ls /etc/dconf/db/local.d/ /usr/share/help/C/mrezequielos-help/ || true
+          ls -d /usr/share/themes/Zorin* /usr/share/icons/Zorin* 2>/dev/null || echo "AVISO temas zorin ausentes"
           echo "=== [5/7] initramfs ==="
           update-initramfs -u -k all
           lsinitramfs /boot/initrd.img-* 2>/dev/null | grep -i "plymouth.*\(spinner\|ubuntu-logo\)" | head -5 || true

@@ -40,6 +40,10 @@ for d in /usr/share/applications/com.mattjakeman.ExtensionManager.desktop /usr/s
   fi
 done
 
+echo "[visual] Temas OFICIAIS Zorin (com créditos)..."
+chmod +x "$BASE/gnome/install-zorin-themes.sh" 2>/dev/null || true
+"$BASE/gnome/install-zorin-themes.sh" || echo "AVISO temas zorin falharam, seguindo com Yaru/Papirus"
+
 echo "[visual] Extensões estilo Zorin..."
 chmod +x "$BASE/gnome/install-extensions.sh" "$BASE/gnome/mrezequielos-appearance" 2>/dev/null || true
 "$BASE/gnome/install-extensions.sh" || echo "AVISO extensões falharam, seguindo"
@@ -51,12 +55,15 @@ cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
 echo "[visual] Icones redondos modernos (Tela roxo, senão Papirus)..."
 apt install -y tela-icon-theme 2>/dev/null || true
 ICON="Papirus-Dark"
-if [ -d /usr/share/icons/Tela-purple-dark ]; then ICON="Tela-purple-dark";
+if [ -d /usr/share/icons/ZorinPurple-Dark ]; then ICON="ZorinPurple-Dark";
+elif [ -d /usr/share/icons/Tela-purple-dark ]; then ICON="Tela-purple-dark";
 elif [ -d /usr/share/icons/Tela-dark ]; then ICON="Tela-dark"; fi
 echo "[visual] icon-theme=$ICON"
 sed -i "s/icon-theme='[^']*'/icon-theme='$ICON'/" /etc/dconf/db/local.d/95-mrezequielos /etc/dconf/db/gdm.d/95-mrezequielos
-echo "[visual] GTK roxo (Yaru-purple-dark, senao Yaru-dark)..."
-if [ -d /usr/share/themes/Yaru-purple-dark ]; then GTK="Yaru-purple-dark"; else GTK="Yaru-dark"; fi
+echo "[visual] GTK Zorin roxo (senão Yaru roxo, senão Yaru escuro)..."
+if [ -d /usr/share/themes/ZorinPurple-Dark ]; then GTK="ZorinPurple-Dark";
+elif [ -d /usr/share/themes/Yaru-purple-dark ]; then GTK="Yaru-purple-dark";
+else GTK="Yaru-dark"; fi
 echo "[visual] gtk-theme=$GTK"
 sed -i "s/gtk-theme='[^']*'/gtk-theme='$GTK'/; s/^theme='[^']*'/theme='$GTK'/" /etc/dconf/db/local.d/95-mrezequielos /etc/dconf/db/gdm.d/95-mrezequielos
 if [ -d /usr/share/themes/Yaru-purple-dark/gnome-shell ]; then

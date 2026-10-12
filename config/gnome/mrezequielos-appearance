@@ -7,13 +7,15 @@ MODE="${1:-}"
 ok() { zenity --info --title="MrEzequielOS Appearance" --text="Aplicado: <b>$1</b>.\nSaia e entre de novo (ou Alt+F2 → r no Xorg) para recarregar." 2>/dev/null || echo "Aplicado: $1."; }
 
 pick_icon() {
-  if [ -d /usr/share/icons/Tela-purple-dark ]; then echo "Tela-purple-dark";
+  if [ -d /usr/share/icons/ZorinPurple-Dark ]; then echo "ZorinPurple-Dark";
+  elif [ -d /usr/share/icons/Tela-purple-dark ]; then echo "Tela-purple-dark";
   elif [ -d /usr/share/icons/Tela-dark ]; then echo "Tela-dark";
   else echo "Papirus-Dark"; fi
 }
 
 pick_gtk() {
-  if [ -d /usr/share/themes/Yaru-purple-dark ]; then echo "Yaru-purple-dark";
+  if [ -d /usr/share/themes/ZorinPurple-Dark ]; then echo "ZorinPurple-Dark";
+  elif [ -d /usr/share/themes/Yaru-purple-dark ]; then echo "Yaru-purple-dark";
   else echo "Yaru-dark"; fi
 }
 

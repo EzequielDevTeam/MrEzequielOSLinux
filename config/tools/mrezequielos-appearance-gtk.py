@@ -247,14 +247,14 @@ class AppearanceWindow(Adw.ApplicationWindow):
 
     def page_tema(self):
         page, group = self.pref_page()
-        themes = [t for t in ls_dirs('/usr/share/themes') if 'Yaru' in t or 'Adwaita' in t] or ['Yaru-dark']
+        themes = [t for t in ls_dirs('/usr/share/themes') if 'Zorin' in t or 'Yaru' in t or 'Adwaita' in t] or ['Yaru-dark']
         cur_gtk = iface().get_string('gtk-theme')
         self.combo_row(group, 'Aplicativos', 'Estilo das janelas e botões',
                        themes, cur_gtk,
                        lambda v: (iface().set_string('gtk-theme', v),
                                   self.sync_wm(v)))
         icons = [t for t in ls_dirs('/usr/share/icons')
-                 if 'Tela' in t or 'Papirus' in t or 'Yaru' in t] or ['Papirus-Dark']
+                 if 'Zorin' in t or 'Tela' in t or 'Papirus' in t or 'Yaru' in t] or ['Papirus-Dark']
         cur_ico = iface().get_string('icon-theme')
         self.combo_row(group, 'Ícones', 'Pacote de ícones',
                        icons, cur_ico,
