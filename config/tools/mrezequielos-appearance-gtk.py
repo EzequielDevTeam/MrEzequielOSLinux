@@ -19,7 +19,7 @@ WALLPAPER = '/usr/share/backgrounds/mrezequielos-wallpaper.svg'
 START_ICON = '/usr/share/pixmaps/mrezequielos-start.svg'
 
 CORE_EXTS = [
-    'dash-to-panel@jderose9.github.com',
+    'zorin-taskbar@zorinos.com',
     'arcmenu@arcmenu.com',
     'appindicatorsupport@rgcjonas.gmail.com',
     'user-theme@gnome-shell-extensions.gcampax.github.com',
@@ -66,8 +66,8 @@ def shell():
 
 
 def dtp():
-    return gs('org.gnome.shell.extensions.dash-to-panel',
-              '/org/gnome/shell/extensions/dash-to-panel/')
+    return gs('org.gnome.shell.extensions.zorin-taskbar',
+              '/org/gnome/shell/extensions/zorin-taskbar/')
 
 
 def arc():

@@ -12,9 +12,9 @@ EXT_DIR="/usr/share/gnome-shell/extensions"
 TMP="/tmp/mre-ext"
 mkdir -p "$EXT_DIR" "$TMP"
 cd "$TMP"
-UUIDS="dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com"
+UUIDS="zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com"
 declare -A MINVER=(
-  [dash-to-panel@jderose9.github.com]=74
+  [zorin-taskbar@zorinos.com]=70
   [arcmenu@arcmenu.com]=74
   [blur-my-shell@aunetx]=74
   [ding@rastersoft.com]=85
@@ -49,12 +49,31 @@ PYEOF
   return 0
 }
 
-git_dashtopanel() {
-  rm -rf dash-to-panel
-  git clone --depth 1 https://github.com/home-sweet-gnome/dash-to-panel.git dash-to-panel \
-    || git clone --depth 1 https://github.com/jderose9/dash-to-panel.git dash-to-panel || return 1
-  cd dash-to-panel && make install || { cd ..; return 1; }
-  cd ..
+git_zorintaskbar() {
+  local UUID="zorin-taskbar@zorinos.com" D="$EXT_DIR/zorin-taskbar@zorinos.com"
+  rm -rf zorin-taskbar
+  git clone --depth 1 https://github.com/ZorinOS/zorin-taskbar.git || return 1
+  [ -f zorin-taskbar/metadata.json ] || return 1
+  python3 - zorin-taskbar/metadata.json <<'PYEOF' || return 1
+import json, sys
+m = json.load(open(sys.argv[1]))
+assert m.get('uuid') == 'zorin-taskbar@zorinos.com', 'uuid errado'
+assert '46' in [str(x) for x in m.get('shell-version', [])], 'sem GNOME 46'
+print('zorin-taskbar v' + str(m.get('version')))
+PYEOF
+  rm -rf "$D"
+  mkdir -p "$D/ui" "$D/img" "$D/schemas" "$D/locale"
+  cp zorin-taskbar/src/*.js zorin-taskbar/src/stylesheet.css zorin-taskbar/metadata.json "$D/" || return 1
+  cp zorin-taskbar/ui/*.ui "$D/ui/" 2>/dev/null || true
+  cp -r zorin-taskbar/img/* "$D/img/" 2>/dev/null || true
+  cp zorin-taskbar/schemas/*.xml "$D/schemas/" || return 1
+  glib-compile-schemas "$D/schemas/" || return 1
+  for po in zorin-taskbar/po/*.po; do
+    lang=$(basename "$po" .po)
+    mkdir -p "$D/locale/$lang/LC_MESSAGES"
+    msgfmt -c "$po" -o "$D/locale/$lang/LC_MESSAGES/zorin-taskbar.mo" 2>/dev/null || true
+  done
+  chmod -R a+rX "$D"
 }
 git_arcmenu() {
   rm -rf ArcMenu && git clone --depth 1 https://github.com/arcmenu/ArcMenu.git || return 1
@@ -90,7 +109,7 @@ for uuid in $UUIDS; do
   fi
   echo "[ext] EGO falhou, tentando git: $uuid"
   case "$uuid" in
-    dash-to-panel*) git_dashtopanel ;;
+    zorin-taskbar*) git_zorintaskbar ;;
     arcmenu*) git_arcmenu ;;
     blur-my-shell*) git_blur ;;
     ding*) git_ding ;;
@@ -107,6 +126,18 @@ m = json.load(open(p))
 m['name'] = 'Menu MrEzequielOS'
 desc = m.get('description', '')
 m['description'] = (desc + ' [Baseado no ArcMenu (GPLv2+) por Andrew Zaech. Adaptado pelo MrEzequielOS.]').strip()
+m['url'] = 'https://github.com/EzequielDevTeam/MrEzequielOSLinux'
+json.dump(m, open(p, 'w'), indent=2, ensure_ascii=False)
+print('rebrand OK:', m['name'])
+PYEOF
+echo "[ext] Rebrand Zorin Taskbar (creditos mantidos)..."
+python3 - "$EXT_DIR/zorin-taskbar@zorinos.com/metadata.json" <<'PYEOF' || echo "[ext] AVISO rebrand taskbar"
+import json, sys
+p = sys.argv[1]
+m = json.load(open(p))
+m['name'] = 'Barra de Tarefas MrEzequielOS'
+desc = m.get('description', '')
+m['description'] = (desc + ' [Baseada na Zorin Taskbar (GPL-2.0) do Zorin Group. Adaptada pelo MrEzequielOS.]').strip()
 m['url'] = 'https://github.com/EzequielDevTeam/MrEzequielOSLinux'
 json.dump(m, open(p, 'w'), indent=2, ensure_ascii=False)
 print('rebrand OK:', m['name'])

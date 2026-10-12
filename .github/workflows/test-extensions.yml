@@ -56,14 +56,14 @@ jobs:
               sleep 2
             done
             echo "=== shell no ar, ligando extensoes ==="
-            for u in dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
+            for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
               gnome-extensions enable "$u" 2>&1 || true
             done
             sleep 12
             echo "=== LIGADAS ==="
             gnome-extensions list --enabled 2>&1
             echo "=== ESTADO DE CADA UMA ==="
-            for u in dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
+            for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
               echo "[$u]"
               gnome-extensions show "$u" 2>&1 | grep -a -E "State|Error" | head -4
             done

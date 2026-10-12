@@ -22,13 +22,13 @@ gnome-extensions list --enabled 2>&1
 echo "--- extensoes DESLIGADAS ---"
 gnome-extensions list --disabled 2>&1
 echo "--- estado de cada extensao nossa ---"
-for u in dash-to-panel@jderose9.github.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com; do echo "[$u]"; gnome-extensions show "$u" 2>&1 | grep -a -E "State|Error|Versão|Version" | head -4; done
+for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com; do echo "[$u]"; gnome-extensions show "$u" 2>&1 | grep -a -E "State|Error|Versão|Version" | head -4; done
 echo "--- chaves reais dos schemas ---"
-for s in org.gnome.shell.extensions.arcmenu org.gnome.shell.extensions.dash-to-panel org.gnome.shell.extensions.ding org.gnome.shell.extensions.blur-my-shell; do echo "[$s]"; gsettings list-keys $s 2>&1 | tr '\n' ' '; echo; done
+for s in org.gnome.shell.extensions.arcmenu org.gnome.shell.extensions.zorin-taskbar org.gnome.shell.extensions.ding org.gnome.shell.extensions.blur-my-shell; do echo "[$s]"; gsettings list-keys $s 2>&1 | tr '\n' ' '; echo; done
 echo "--- ubiquity abre? ---"
 timeout 10 ubiquity --help >/dev/null 2>&1 && echo "ubiquity --help OK" || echo "ubiquity --help FALHOU"
 echo "--- erros das extensões (sessão atual) ---"
-journalctl --user -b 0 -g "extension|dash-to-panel|arcmenu|ding|blur" --no-pager 2>/dev/null | tail -20
+journalctl --user -b 0 -g "extension|zorin-taskbar|arcmenu|ding|blur" --no-pager 2>/dev/null | tail -20
 echo "--- dconf banco do sistema ---"
 ls -l /etc/dconf/db/ /etc/dconf/db/local.d/ /etc/dconf/db/gdm.d/ 2>&1
 echo "--- plymouth ---"

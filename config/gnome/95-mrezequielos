@@ -26,22 +26,13 @@ button-layout='close,minimize,maximize:'
 
 [org/gnome/shell]
 favorite-apps=['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']
-enabled-extensions=['dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']
+enabled-extensions=['zorin-taskbar@zorinos.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']
 disable-user-extensions=false
 
-[org/gnome/shell/extensions/dash-to-panel]
+[org/gnome/shell/extensions/zorin-taskbar]
 panel-positions='{"0": "BOTTOM"}'
 panel-sizes='{"0": 48}'
 panel-element-positions='{"0": [{"element": "showAppsButton", "visible": false, "position": "stackedTL"}, {"element": "activitiesButton", "visible": false, "position": "stackedTL"}, {"element": "leftBox", "visible": true, "position": "stackedTL"}, {"element": "taskbar", "visible": true, "position": "centerMonitor"}, {"element": "centerBox", "visible": true, "position": "stackedBR"}, {"element": "rightBox", "visible": true, "position": "stackedBR"}, {"element": "dateMenu", "visible": true, "position": "stackedBR"}, {"element": "systemMenu", "visible": true, "position": "stackedBR"}, {"element": "desktopButton", "visible": true, "position": "stackedBR"}]}'
-dot-color-1="#E95420"
-dot-color-2="#E95420"
-dot-color-3="#E95420"
-dot-color-4="#E95420"
-dot-color-unfocused-1="#CE93D8"
-dot-color-unfocused-2="#CE93D8"
-dot-color-unfocused-3="#CE93D8"
-dot-color-unfocused-4="#CE93D8"
-show-apps-icon-side-padding=8
 global-border-radius=12
 trans-use-custom-opacity=true
 trans-panel-opacity=0.75
@@ -50,7 +41,6 @@ isolate-monitors=true
 group-apps=true
 show-favorites=true
 show-running-apps=true
-animate-appicon-hover=true
 
 [org/gnome/shell/extensions/arcmenu]
 menu-layout='arcmenu'
