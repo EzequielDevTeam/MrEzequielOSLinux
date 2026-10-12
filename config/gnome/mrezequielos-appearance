@@ -15,13 +15,14 @@ ok() { zenity --info --title="MrEzequielOS Appearance" --text="Layout <b>$1</b> 
 
 apply_windows() {
   gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
-  gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' || true
+  if [ -d /usr/share/icons/Tela-purple-dark ]; then ICON="Tela-purple-dark"; elif [ -d /usr/share/icons/Tela-dark ]; then ICON="Tela-dark"; else ICON="Papirus-Dark"; fi
+  gsettings set org.gnome.desktop.interface icon-theme "$ICON" || true
   gsettings set org.gnome.desktop.interface cursor-theme 'Yaru' || true
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
   if gsettings set org.gnome.desktop.interface font-name 'Inter 11' 2>/dev/null; then :; else gsettings set org.gnome.desktop.interface font-name 'Ubuntu 11' || true; fi
   gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
   gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
-  gsettings set org.gnome.shell favorite-apps "['firefox.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']" || true
+  gsettings set org.gnome.shell favorite-apps "['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']" || true
   gsettings set org.gnome.shell enabled-extensions "['dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']" || true
   gsettings set org.gnome.shell disable-user-extensions false || true
   dconf write /org/gnome/shell/extensions/dash-to-panel/panel-positions "'{\"0\":\"BOTTOM\"}'" || true
@@ -42,7 +43,8 @@ apply_windows() {
 
 apply_mac() {
   gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
-  gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' || true
+  if [ -d /usr/share/icons/Tela-purple-dark ]; then ICON="Tela-purple-dark"; elif [ -d /usr/share/icons/Tela-dark ]; then ICON="Tela-dark"; else ICON="Papirus-Dark"; fi
+  gsettings set org.gnome.desktop.interface icon-theme "$ICON" || true
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
   gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
   gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
@@ -58,14 +60,18 @@ apply_ubuntu() {
   gsettings set org.gnome.desktop.interface gtk-theme 'Yaru' || true
   gsettings set org.gnome.desktop.interface icon-theme 'Papirus' || true
   gsettings set org.gnome.shell enabled-extensions "['ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'ubuntu-dock@ubuntu.com']" || true
-  gsettings set org.gnome.shell favorite-apps "['firefox.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']" || true
+  gsettings set org.gnome.shell favorite-apps "['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-appearance "'Icon'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'/usr/share/pixmaps/mrezequielos-start.svg'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon-size 28 || true
 }
 
+pin_apps() {
+  dconf write /org/gnome/shell/extensions/arcmenu/pinned-apps "'[[{\"id\": \"brave-browser.desktop\"}, {\"id\": \"org.gnome.Nautilus.desktop\"}], [{\"id\": \"org.gnome.Terminal.desktop\"}], [{\"id\": \"org.gnome.Software.desktop\"}], [{\"id\": \"libreoffice-writer.desktop\"}], [{\"id\": \"mrezequielos-help.desktop\"}]]'" || true
+}
+
 case "$MODE" in
-  mac*) apply_mac; ok "macOS" ;;
-  ubuntu*) apply_ubuntu; ok "Ubuntu" ;;
-  *) apply_windows; ok "Windows" ;;
+  mac*) apply_mac; pin_apps; ok "macOS" ;;
+  ubuntu*) apply_ubuntu; pin_apps; ok "Ubuntu" ;;
+  *) apply_windows; pin_apps; ok "Windows" ;;
 esac

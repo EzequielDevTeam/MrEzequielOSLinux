@@ -24,7 +24,7 @@ theme='Yaru-dark'
 button-layout='close,minimize,maximize:'
 
 [org/gnome/shell]
-favorite-apps=['firefox.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']
+favorite-apps=['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']
 enabled-extensions=['dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']
 disable-user-extensions=false
 
@@ -50,6 +50,7 @@ menu-button-icon='/usr/share/pixmaps/mrezequielos-start.svg'
 menu-button-icon-size=28
 menu-button-border-radius=(true, 22)
 show-activities-button=false
+pinned-apps=[[{'id': 'brave-browser.desktop'}], [{'id': 'org.gnome.Nautilus.desktop'}], [{'id': 'org.gnome.Terminal.desktop'}], [{'id': 'org.gnome.Software.desktop'}], [{'id': 'libreoffice-writer.desktop'}], [{'id': 'mrezequielos-help.desktop'}]]
 
 [org/gnome/shell/extensions/ding]
 show-home=true

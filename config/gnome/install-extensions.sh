@@ -99,6 +99,19 @@ for uuid in $UUIDS; do
   esac && echo "[ext] OK(git): $uuid" || echo "[ext] FALHOU: $uuid"
 done
 
+echo "[ext] Rebrand ArcMenu -> Menu MrEzequielOS (creditos mantidos)..."
+python3 - "$EXT_DIR/arcmenu@arcmenu.com/metadata.json" <<'PYEOF' || echo "[ext] AVISO rebrand"
+import json, sys
+p = sys.argv[1]
+m = json.load(open(p))
+m['name'] = 'Menu MrEzequielOS'
+desc = m.get('description', '')
+m['description'] = (desc + ' [Baseado no ArcMenu (GPLv2+) por Andrew Zaech. Adaptado pelo MrEzequielOS.]').strip()
+m['url'] = 'https://github.com/EzequielDevTeam/MrEzequielOSLinux'
+json.dump(m, open(p, 'w'), indent=2, ensure_ascii=False)
+print('rebrand OK:', m['name'])
+PYEOF
+
 echo "[ext] instaladas:"
 ls -1 "$EXT_DIR"
 echo "[ext] pronto."

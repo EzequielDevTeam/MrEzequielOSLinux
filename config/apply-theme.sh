@@ -20,6 +20,12 @@ EOF
   apt install -y firefox 2>/dev/null || true
   apt install -y firefox-locale-pt 2>/dev/null || true ) || echo "AVISO Firefox PPA falhou, usando Epiphany"
 
+echo "[visual] Navegador Brave (oficial, sem snap)..."
+( curl -fsSL https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg -o /usr/share/keyrings/brave-browser-archive-keyring.gpg 2>/dev/null || true
+  echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" > /etc/apt/sources.list.d/brave-browser-release.list
+  apt update || true
+  apt install -y brave-browser 2>/dev/null || true ) || echo "AVISO Brave falhou"
+
 echo "[visual] Wallpaper + logo..."
 mkdir -p /usr/share/backgrounds /usr/share/pixmaps /usr/local/bin /usr/share/applications
 cp "$BASE/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
@@ -35,6 +41,13 @@ echo "[visual] Padrões do desktop (layout Windows travado)..."
 mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d /etc/dconf/db/site.d /etc/dconf/db/distro.d /etc/dconf/profile
 cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
 cp "$BASE/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
+echo "[visual] Icones redondos modernos (Tela roxo, senão Papirus)..."
+apt install -y tela-icon-theme 2>/dev/null || true
+ICON="Papirus-Dark"
+if [ -d /usr/share/icons/Tela-purple-dark ]; then ICON="Tela-purple-dark";
+elif [ -d /usr/share/icons/Tela-dark ]; then ICON="Tela-dark"; fi
+echo "[visual] icon-theme=$ICON"
+sed -i "s/icon-theme='[^']*'/icon-theme='$ICON'/" /etc/dconf/db/local.d/95-mrezequielos /etc/dconf/db/gdm.d/95-mrezequielos
 cat > /etc/dconf/profile/user <<'EOF'
 user-db:user
 system-db:local
