@@ -1,6 +1,7 @@
 #!/bin/bash
-# MrEzequielOS Appearance - central de visual (layouts + efeitos).
-# Uso: mrezequielos-appearance [windows|mac|ubuntu|efeitos]
+# MrEzequielOS Appearance - central de visual (igual Zorin Appearance).
+# Layout, Tema, Cor de destaque, Fundo, Interface e Efeitos.
+# Uso: mrezequielos-appearance [windows|mac|ubuntu|efeitos|tema|cor|fundo|interface]
 MODE="${1:-}"
 
 ok() { zenity --info --title="MrEzequielOS Appearance" --text="Aplicado: <b>$1</b>.\nSaia e entre de novo (ou Alt+F2 → r no Xorg) para recarregar." 2>/dev/null || echo "Aplicado: $1."; }
@@ -11,8 +12,15 @@ pick_icon() {
   else echo "Papirus-Dark"; fi
 }
 
+pick_gtk() {
+  if [ -d /usr/share/themes/Yaru-purple-dark ]; then echo "Yaru-purple-dark";
+  else echo "Yaru-dark"; fi
+}
+
 apply_windows() {
-  gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
+  GTK=$(pick_gtk)
+  gsettings set org.gnome.desktop.interface gtk-theme "$GTK" || true
+  gsettings set org.gnome.desktop.wm.preferences theme "$GTK" || true
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
   gsettings set org.gnome.desktop.interface accent-color 'purple' || true
   gsettings set org.gnome.desktop.interface cursor-theme 'Yaru' || true
@@ -40,7 +48,8 @@ apply_windows() {
 }
 
 apply_mac() {
-  gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
+  GTK=$(pick_gtk)
+  gsettings set org.gnome.desktop.interface gtk-theme "$GTK" || true
   gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true
   gsettings set org.gnome.desktop.interface accent-color 'purple' || true
   gsettings set org.gnome.desktop.interface icon-theme "$(pick_icon)" || true
@@ -69,6 +78,89 @@ pin_apps() {
   dconf write /org/gnome/shell/extensions/arcmenu/pinned-apps "'[[{\"id\": \"brave-browser.desktop\"}, {\"id\": \"org.gnome.Nautilus.desktop\"}], [{\"id\": \"org.gnome.Terminal.desktop\"}], [{\"id\": \"org.gnome.Software.desktop\"}], [{\"id\": \"libreoffice-writer.desktop\"}], [{\"id\": \"mrezequielos-help.desktop\"}]]'" || true
 }
 
+pick_layout() {
+  zenity --list --title="MrEzequielOS Appearance - Layout" \
+    --text="Escolha o layout do desktop:" \
+    --column="Layout" --column="Descrição" \
+    windows "Barra única embaixo + menu iniciar (padrão)" \
+    mac "Barra em cima + dock embaixo (macOS)" \
+    ubuntu "Barra lateral (Ubuntu)" 2>/dev/null || echo "windows"
+}
+
+tema() {
+  T=$(zenity --list --title="MrEzequielOS Appearance - Tema" \
+    --text="Escolha o tema:" --column="Tema" --column="Descrição" \
+    roxo "Escuro roxo MrEzequielOS (padrão)" \
+    escuro "Escuro padrão" \
+    claro "Claro padrão" 2>/dev/null || echo "")
+  case "$T" in
+    claro) gsettings set org.gnome.desktop.interface gtk-theme 'Yaru' || true
+      gsettings set org.gnome.desktop.wm.preferences theme 'Yaru' || true
+      gsettings set org.gnome.desktop.interface color-scheme 'default' || true ;;
+    escuro) gsettings set org.gnome.desktop.interface gtk-theme 'Yaru-dark' || true
+      gsettings set org.gnome.desktop.wm.preferences theme 'Yaru-dark' || true
+      gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true ;;
+    roxo) G=$(pick_gtk)
+      gsettings set org.gnome.desktop.interface gtk-theme "$G" || true
+      gsettings set org.gnome.desktop.wm.preferences theme "$G" || true
+      gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' || true ;;
+    *) return 0 ;;
+  esac
+  ok "tema"
+}
+
+cor() {
+  C=$(zenity --list --title="MrEzequielOS Appearance - Cor de destaque" \
+    --text="Cor dos botões, interruptores e detalhes:" --column="Cor" --column="" \
+    roxo "Roxo MrEzequielOS (padrão)" \
+    laranja "Laranja Ubuntu" \
+    azul "Azul" \
+    verde "Verde" \
+    vermelho "Vermelho" 2>/dev/null || echo "")
+  case "$C" in
+    laranja) A=orange ;; azul) A=blue ;; verde) A=green ;; vermelho) A=red ;; roxo) A=purple ;;
+    *) return 0 ;;
+  esac
+  gsettings set org.gnome.desktop.interface accent-color "$A" || true
+  ok "cor de destaque"
+}
+
+fundo() {
+  MAP=$(find /usr/share/backgrounds -maxdepth 2 \( -name '*.jpg' -o -name '*.png' -o -name '*.svg' \) 2>/dev/null | sort | head -20)
+  [ -z "$MAP" ] && return 0
+  LIST=""
+  while IFS= read -r f; do
+    base=$(basename "$f")
+    if [ "$f" = "/usr/share/backgrounds/mrezequielos-wallpaper.svg" ]; then
+      LIST="$LIST mrezequielos \"MrEzequielOS (padrão)\""
+    else
+      LIST="$LIST \"$base\" \"$f\""
+    fi
+  done <<EOF
+$MAP
+EOF
+  # shellcheck disable=SC2086
+  ESC=$(eval zenity --list --title="MrEzequielOS Appearance - Fundo" --text="Escolha o papel de parede:" --column="ID" --column="Arquivo" $LIST 2>/dev/null) || return 0
+  [ -z "$ESC" ] && return 0
+  if [ "$ESC" = "mrezequielos" ]; then F="/usr/share/backgrounds/mrezequielos-wallpaper.svg";
+  else F=$(echo "$MAP" | grep -F "/$ESC" | head -1); fi
+  [ -z "$F" ] && return 0
+  gsettings set org.gnome.desktop.background picture-uri "file://$F" || true
+  gsettings set org.gnome.desktop.background picture-uri-dark "file://$F" || true
+  ok "fundo"
+}
+
+interface() {
+  CUR=$(gsettings get org.gnome.desktop.interface enable-animations 2>/dev/null || echo true)
+  if [ "$CUR" = "true" ]; then ST="FALSE"; TXT="Animações estão LIGADAS. Desligar (mais rápido)?";
+  else ST="TRUE"; TXT="Animações estão DESLIGADAS. Ligar (mais bonito)?"; fi
+  if zenity --question --title="MrEzequielOS Appearance - Interface" --text="$TXT" 2>/dev/null; then
+    if [ "$ST" = "TRUE" ]; then gsettings set org.gnome.desktop.interface enable-animations true || true
+    else gsettings set org.gnome.desktop.interface enable-animations false || true; fi
+    ok "interface"
+  fi
+}
+
 effects() {
   CUR=$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo "[]")
   st() { echo "$CUR" | grep -q "$1" && echo TRUE || echo FALSE; }
@@ -81,8 +173,8 @@ effects() {
     $(st desktop-cube) "cubo" "Cubo 3D ao trocar área de trabalho" \
     --separator=" " --width=560 --height=300 2>/dev/null) || exit 0
   NEW=$(python3 - "$SEL" <<'PYEOF'
-import ast, sys
-cur = ast.literal_eval(__import__('subprocess').check_output(
+import ast, sys, subprocess
+cur = ast.literal_eval(subprocess.check_output(
   ['gsettings', 'get', 'org.gnome.shell', 'enabled-extensions']).decode())
 want = {'blur': 'blur-my-shell@aunetx', 'icones': 'ding@rastersoft.com',
         'fogo': 'burn-my-windows@schneegans.github.com', 'cubo': 'desktop-cube@schneegans.github.com'}
@@ -99,18 +191,27 @@ if [ -z "$MODE" ]; then
   ACAO=$(zenity --list --title="MrEzequielOS Appearance" \
     --text="O que ajustar?" --column="Ação" --column="Descrição" \
     layout "Estilo Windows, macOS ou Ubuntu" \
+    tema "Claro, escuro ou roxo" \
+    cor "Cor de destaque dos botões" \
+    fundo "Papel de parede" \
+    interface "Animações ligado/desligado" \
     efeitos "Efeitos visuais e ícones do desktop" 2>/dev/null) || exit 0
-  if [ "$ACAO" = "efeitos" ]; then effects; exit 0; fi
-  MODE=$(zenity --list --title="MrEzequielOS Appearance" \
-    --text="Escolha o layout do desktop (igual Zorin OS):" \
-    --column="Layout" --column="Descrição" \
-    windows "Barra única embaixo + menu iniciar (padrão)" \
-    mac "Barra em cima + dock embaixo (macOS)" \
-    ubuntu "Barra lateral (Ubuntu)" 2>/dev/null || echo "windows")
+  case "$ACAO" in
+    tema) tema; exit 0 ;;
+    cor) cor; exit 0 ;;
+    fundo) fundo; exit 0 ;;
+    interface) interface; exit 0 ;;
+    efeitos) effects; exit 0 ;;
+  esac
+  MODE=$(pick_layout)
 fi
 
 case "$MODE" in
   efeitos) effects ;;
+  tema) tema ;;
+  cor) cor ;;
+  fundo) fundo ;;
+  interface) interface ;;
   mac*) apply_mac; pin_apps; ok "macOS" ;;
   ubuntu*) apply_ubuntu; pin_apps; ok "Ubuntu" ;;
   *) apply_windows; pin_apps; ok "Windows" ;;

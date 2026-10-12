@@ -55,6 +55,15 @@ if [ -d /usr/share/icons/Tela-purple-dark ]; then ICON="Tela-purple-dark";
 elif [ -d /usr/share/icons/Tela-dark ]; then ICON="Tela-dark"; fi
 echo "[visual] icon-theme=$ICON"
 sed -i "s/icon-theme='[^']*'/icon-theme='$ICON'/" /etc/dconf/db/local.d/95-mrezequielos /etc/dconf/db/gdm.d/95-mrezequielos
+echo "[visual] GTK roxo (Yaru-purple-dark, senao Yaru-dark)..."
+if [ -d /usr/share/themes/Yaru-purple-dark ]; then GTK="Yaru-purple-dark"; else GTK="Yaru-dark"; fi
+echo "[visual] gtk-theme=$GTK"
+sed -i "s/gtk-theme='[^']*'/gtk-theme='$GTK'/; s/^theme='[^']*'/theme='$GTK'/" /etc/dconf/db/local.d/95-mrezequielos /etc/dconf/db/gdm.d/95-mrezequielos
+if [ -d /usr/share/themes/Yaru-purple-dark/gnome-shell ]; then
+  mkdir -p /etc/dconf/db/local.d
+  printf "[org/gnome/shell/extensions/user-theme]\nname='$GTK'\n" >> /etc/dconf/db/local.d/95-mrezequielos
+  echo "[visual] shell-theme=$GTK"
+fi
 cat > /etc/dconf/profile/user <<'EOF'
 user-db:user
 system-db:local
@@ -114,7 +123,7 @@ mkdir -p /etc/systemd/system /var/lib/mrezequielos
 cp "$BASE/tools/mrezequielos-update-check.service" /etc/systemd/system/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update-check.timer" /etc/systemd/system/ 2>/dev/null || true
 systemctl enable mrezequielos-update-check.timer 2>/dev/null || true
-echo "1.1.1" > /etc/mrezequielos-version
+echo "1.1.2" > /etc/mrezequielos-version
 
 echo "[visual] App de Ajuda próprio (tudo nosso, com créditos)..."
 mkdir -p /usr/share/help/C/mrezequielos-help
@@ -146,9 +155,9 @@ echo "[visual] Zorin Connect (GSConnect) ativado por padrão."
 echo "[visual] Base vira MrEzequielOS (lsb-release nosso, icone nosso no updater)..."
 cat > /etc/lsb-release <<'EOF'
 DISTRIB_ID=MrEzequielOS
-DISTRIB_RELEASE=1.1.1
+DISTRIB_RELEASE=1.1.2
 DISTRIB_CODENAME=noble
-DISTRIB_DESCRIPTION="MrEzequielOS 1.1.1"
+DISTRIB_DESCRIPTION="MrEzequielOS 1.1.2"
 EOF
 cat /etc/lsb-release
 if [ -f /usr/share/applications/update-manager.desktop ]; then
@@ -168,4 +177,4 @@ if [ -f /etc/update-manager/release-upgrades ]; then
 else
   echo "AVISO release-upgrades ausente"
 fi
-echo "OK - MrEzequielOS 1.1.1 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."
+echo "OK - MrEzequielOS 1.1.2 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."
