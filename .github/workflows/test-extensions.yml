@@ -124,8 +124,9 @@ jobs:
 
       - name: Reset/backup/restore no db do sistema
         run: |
-          sudo mkdir -p /etc/dconf/db/test-mre.d
-          printf '[org/gnome/test/mre]\nold-key='"'"'velho'"'"'\n' | sudo tee /etc/dconf/db/test-mre.d/00-test > /dev/null
+          sudo mkdir -p /etc/dconf/profile /etc/dconf/db/local.d
+          printf 'user-db:user\nsystem-db:local\nsystem-db:site\nsystem-db:distro\n' | sudo tee /etc/dconf/profile/user > /dev/null
+          printf '[org/gnome/test/mre]\nold-key='"'"'velho'"'"'\n' | sudo tee /etc/dconf/db/local.d/99-test-mre > /dev/null
           sudo dconf update
           test "$(dconf read /org/gnome/test/mre/old-key)" = "'velho'" || { echo "FALHOU: escrita inicial"; exit 1; }
           python3 - <<'EOF'
@@ -157,7 +158,7 @@ jobs:
               assert r.returncode == 0, 'reset falhou: ' + p
           print('RESET-BACKUP-RESTORE-OK')
           EOF
-          sudo rm -rf /etc/dconf/db/test-mre.d
+          sudo rm -f /etc/dconf/db/local.d/99-test-mre
           sudo dconf update
           echo LIMPEZA-OK
 
