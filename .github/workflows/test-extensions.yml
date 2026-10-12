@@ -126,29 +126,31 @@ jobs:
         run: |
           sudo mkdir -p /etc/dconf/profile /etc/dconf/db/local.d
           printf 'user-db:user\nsystem-db:local\nsystem-db:site\nsystem-db:distro\n' | sudo tee /etc/dconf/profile/user > /dev/null
-          printf '[org/gnome/test/mre]\nold-key='"'"'velho'"'"'\n' | sudo tee /etc/dconf/db/local.d/99-test-mre > /dev/null
+          printf '[org/gnome/test/mre]\nold-key='"'"'velho-sistema'"'"'\n' | sudo tee /etc/dconf/db/local.d/99-test-mre > /dev/null
           sudo dconf update
-          test "$(dconf read /org/gnome/test/mre/old-key)" = "'velho'" || { echo "FALHOU: escrita inicial"; exit 1; }
+          test "$(dconf read /org/gnome/test/mre/old-key)" = "'velho-sistema'" || { echo "FALHOU: escrita inicial"; exit 1; }
           python3 - <<'EOF'
           import subprocess
+          # planta valor de USUARIO por cima (igual customizacao velha)
+          subprocess.run(['dconf', 'write', '/org/gnome/test/mre/old-key', "'velho-user'"], check=True)
           # backup (igual mre_backup_users)
           dump = subprocess.run(['dconf', 'dump', '/org/gnome/test/'], capture_output=True, text=True).stdout
-          assert 'velho' in dump, 'backup nao capturou'
+          assert 'velho-user' in dump, 'backup nao capturou'
           open('/tmp/mre-backup-test.txt', 'w').write(dump)
-          # reset de cada caminho da lista real que existir no teste (sintaxe valida?)
-          for line in open('config/dconf-reset-list.txt'):
-              p = line.strip()
-              if not p or p.startswith('#'):
-                  continue
-              r = subprocess.run(['dconf', 'reset', '-f', '/org/gnome/test/mre/'])
-              assert r.returncode == 0, 'reset falhou'
-              break
+          # reset: some o do usuario, cai no do sistema
+          r = subprocess.run(['dconf', 'reset', '-f', '/org/gnome/test/mre/'])
+          assert r.returncode == 0, 'reset falhou'
           dump2 = subprocess.run(['dconf', 'dump', '/org/gnome/test/'], capture_output=True, text=True).stdout
-          assert 'velho' not in dump2, 'reset nao limpou'
+          assert 'velho-user' not in dump2, 'reset nao limpou usuario'
+          assert 'velho-sistema' in dump2, 'reset quebrou fallback do sistema'
           # restore
           subprocess.run(['dconf', 'load', '/org/gnome/test/'], input=open('/tmp/mre-backup-test.txt').read(), text=True, check=True)
           dump3 = subprocess.run(['dconf', 'dump', '/org/gnome/test/'], capture_output=True, text=True).stdout
-          assert 'velho' in dump3, 'restore nao voltou'
+          assert 'velho-user' in dump3, 'restore nao voltou'
+          # restore
+          subprocess.run(['dconf', 'load', '/org/gnome/test/'], input=open('/tmp/mre-backup-test.txt').read(), text=True, check=True)
+          dump3 = subprocess.run(['dconf', 'dump', '/org/gnome/test/'], capture_output=True, text=True).stdout
+          assert 'velho-user' in dump3, 'restore nao voltou'
           # cada caminho da lista reseta sem erro (sintaxe valida no dconf real)
           for line in open('config/dconf-reset-list.txt'):
               p = line.strip()
