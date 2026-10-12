@@ -140,4 +140,12 @@ echo "[visual] GRUB + hostname..."
 sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="MrEzequielOS"/' /etc/default/grub 2>/dev/null || echo 'GRUB_DISTRIBUTOR="MrEzequielOS"' >> /etc/default/grub
 echo "MrEzequielOS" > /etc/hostname 2>/dev/null || true
 update-grub 2>/dev/null || true
+
+echo "[visual] Bloqueia upgrade de base (igual Zorin: sem oferta de nova versao Ubuntu)..."
+if [ -f /etc/update-manager/release-upgrades ]; then
+  sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+  grep -E "^Prompt=" /etc/update-manager/release-upgrades || true
+else
+  echo "AVISO release-upgrades ausente"
+fi
 echo "OK - MrEzequielOS 1.1 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."
