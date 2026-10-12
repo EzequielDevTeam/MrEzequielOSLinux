@@ -33,6 +33,13 @@ cp "$BASE/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/nul
 cp "$BASE/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
 cp "$BASE/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
 
+echo "[visual] Extensões gerenciadas só pelo nosso Appearance (esconde apps soltos)..."
+for d in /usr/share/applications/com.mattjakeman.ExtensionManager.desktop /usr/share/applications/org.gnome.Extensions.desktop; do
+  if [ -f "$d" ] && ! grep -q "^NoDisplay=true" "$d"; then
+    echo "NoDisplay=true" >> "$d"
+  fi
+done
+
 echo "[visual] Extensões estilo Zorin..."
 chmod +x "$BASE/gnome/install-extensions.sh" "$BASE/gnome/mrezequielos-appearance" 2>/dev/null || true
 "$BASE/gnome/install-extensions.sh" || echo "AVISO extensões falharam, seguindo"
