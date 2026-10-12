@@ -1,0 +1,9 @@
+#!/bin/bash
+# MrEzequielOS - garante chaveiro (keyring) desbloqueado na sessão LIVE.
+# No live o usuário não tem senha, então o GNOME não destrava o keyring
+# sozinho (Wi-Fi salvo, pareamento etc. pediam toda hora). Aqui criamos/
+# destravamos o keyring "login" com senha vazia. Só roda no live.
+grep -q "boot=casper" /proc/cmdline 2>/dev/null || exit 0
+[ -d /cdrom ] || [ -d /isodevice ] || exit 0
+printf '' | gnome-keyring-daemon --daemonize --unlock --components=secrets,pkcs11,ssh 2>/dev/null || true
+exit 0

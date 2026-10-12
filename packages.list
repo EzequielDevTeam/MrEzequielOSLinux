@@ -19,6 +19,8 @@ gir1.2-gmenu-3.0
 gir1.2-gnomedesktop-3.0
 gnome-disk-utility
 seahorse
+gnome-keyring
+libpam-gnome-keyring
 network-manager-gnome
 xserver-xorg
 xwayland

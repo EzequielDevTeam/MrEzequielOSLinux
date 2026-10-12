@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=MrEzequielOS Live Keyring
+Exec=mrezequielos-live-keyring
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=5
