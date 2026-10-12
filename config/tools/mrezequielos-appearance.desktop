@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=MrEzequielOS Appearance
 Comment=Trocar layout Windows / macOS / Ubuntu (estilo Zorin)
-Exec=mrezequielos-appearance
+Exec=sh -c 'mrezequielos-appearance-gtk || mrezequielos-appearance'
 Icon=mrezequielos
 Terminal=false
 Type=Application

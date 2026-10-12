@@ -150,6 +150,8 @@ fi
 echo "[visual] App Appearance (trocar layout Windows/macOS)..."
 cp "$BASE/gnome/mrezequielos-appearance" /usr/local/bin/mrezequielos-appearance
 chmod +x /usr/local/bin/mrezequielos-appearance
+cp "$BASE/tools/mrezequielos-appearance-gtk.py" /usr/local/bin/mrezequielos-appearance-gtk
+chmod +x /usr/local/bin/mrezequielos-appearance-gtk
 
 echo "[visual] Zorin Connect (GSConnect) ativado por padrão."
 echo "[visual] Base vira MrEzequielOS (lsb-release nosso, icone nosso no updater)..."

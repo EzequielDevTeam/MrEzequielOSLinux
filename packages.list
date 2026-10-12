@@ -42,6 +42,9 @@ sassc
 libglib2.0-bin
 software-properties-common
 librsvg2-bin
+python3-gi
+gir1.2-gtk-4.0
+gir1.2-adw-1
 
 # Tema / bonito estilo Zorin (escuro + Papirus)
 yaru-theme-gnome-shell
