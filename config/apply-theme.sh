@@ -170,7 +170,6 @@ DISTRIB_RELEASE=26.04
 DISTRIB_CODENAME=resolute
 DISTRIB_DESCRIPTION="MrEzequielOS 2.0"
 EOF
-EOF
 cat /etc/lsb-release
 if [ -f /usr/share/applications/update-manager.desktop ]; then
   sed -i 's/^Icon=.*/Icon=mrezequielos/' /usr/share/applications/update-manager.desktop

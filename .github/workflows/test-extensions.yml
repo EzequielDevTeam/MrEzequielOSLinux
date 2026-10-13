@@ -92,6 +92,9 @@ jobs:
           bash -n config/gnome/install-extensions.sh
           bash -n config/apply-theme.sh
           python3 -m py_compile config/tools/mrezequielos-appearance-gtk.py
+          for f in config/apply-theme.sh config/tools/mrezequielos-update; do
+            awk 'prev=="EOF" && $0=="EOF"{bad=1} {prev=$0} END{exit bad}' "$f" || { echo "FALHOU: EOF duplicado em $f"; exit 1; }
+          done
           echo SINTAXE-OK
 
       - name: Consistência das listas
