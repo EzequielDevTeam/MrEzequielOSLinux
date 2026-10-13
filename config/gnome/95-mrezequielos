@@ -32,7 +32,7 @@ disable-user-extensions=false
 [org/gnome/shell/extensions/zorin-taskbar]
 panel-positions='{"0": "BOTTOM"}'
 panel-sizes='{"0": 48}'
-panel-element-positions='{"0": [{"element": "showAppsButton", "visible": false, "position": "stackedTL"}, {"element": "activitiesButton", "visible": false, "position": "stackedTL"}, {"element": "leftBox", "visible": true, "position": "stackedTL"}, {"element": "taskbar", "visible": true, "position": "centerMonitor"}, {"element": "centerBox", "visible": true, "position": "stackedBR"}, {"element": "rightBox", "visible": true, "position": "stackedBR"}, {"element": "dateMenu", "visible": true, "position": "stackedBR"}, {"element": "systemMenu", "visible": true, "position": "stackedBR"}, {"element": "desktopButton", "visible": true, "position": "stackedBR"}]}'
+panel-element-positions='{"0": [{"element": "showAppsButton", "visible": false, "position": "stackedTL"}, {"element": "activitiesButton", "visible": false, "position": "stackedTL"}, {"element": "leftBox", "visible": true, "position": "stackedTL"}, {"element": "taskbar", "visible": true, "position": "centerMonitor"}, {"element": "centerBox", "visible": true, "position": "stackedBR"}, {"element": "rightBox", "visible": true, "position": "stackedBR"}, {"element": "dateMenu", "visible": true, "position": "stackedBR"}, {"element": "systemMenu", "visible": true, "position": "stackedBR"}, {"element": "desktopButton", "visible": false, "position": "stackedBR"}]}'
 global-border-radius=12
 trans-use-custom-opacity=true
 trans-panel-opacity=0.75
@@ -49,6 +49,7 @@ menu-button-icon='/usr/share/pixmaps/mrezequielos-start.svg'
 menu-button-icon-size=28
 menu-button-border-radius=(true, 22)
 show-activities-button=false
+default-menu-view='Categories_List'
 menu-button-right-click-action='None'
 context-menu-items=[{'id': 'ArcMenu_PowerOptions', 'name': 'Power Options', 'icon': 'system-shutdown-symbolic'}, {'id': 'ArcMenu_Separator', 'name': 'Separator', 'icon': 'list-remove-symbolic'}, {'id': 'ArcMenu_ShowDesktop', 'name': 'Show Desktop', 'icon': 'computer-symbolic'}, {'id': 'ArcMenu_ActivitiesOverview', 'name': 'Activities Overview', 'icon': 'view-fullscreen-symbolic'}]
 pinned-apps=[[{'id': 'brave-browser.desktop'}], [{'id': 'org.gnome.Nautilus.desktop'}], [{'id': 'org.gnome.Terminal.desktop'}], [{'id': 'org.gnome.Software.desktop'}], [{'id': 'libreoffice-writer.desktop'}], [{'id': 'mrezequielos-help.desktop'}]]

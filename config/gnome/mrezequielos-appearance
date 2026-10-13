@@ -50,6 +50,7 @@ apply_windows() {
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon "'/usr/share/pixmaps/mrezequielos-start.svg'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-icon-size 28 || true
   dconf write /org/gnome/shell/extensions/arcmenu/show-activities-button false || true
+  dconf write /org/gnome/shell/extensions/arcmenu/default-menu-view "'Categories_List'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/menu-button-right-click-action "'None'" || true
   dconf write /org/gnome/shell/extensions/arcmenu/context-menu-items "'[{\"id\": \"ArcMenu_PowerOptions\", \"name\": \"Power Options\", \"icon\": \"system-shutdown-symbolic\"}, {\"id\": \"ArcMenu_Separator\", \"name\": \"Separator\", \"icon\": \"list-remove-symbolic\"}, {\"id\": \"ArcMenu_ShowDesktop\", \"name\": \"Show Desktop\", \"icon\": \"computer-symbolic\"}, {\"id\": \"ArcMenu_ActivitiesOverview\", \"name\": \"Activities Overview\", \"icon\": \"view-fullscreen-symbolic\"}]'" || true
   gsettings set org.gnome.shell.extensions.ding show-home true || true
