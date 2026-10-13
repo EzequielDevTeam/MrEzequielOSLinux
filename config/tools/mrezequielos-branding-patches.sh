@@ -122,62 +122,76 @@ else
 fi
 
 # 4. Patch nmwidgets.py - configure_icons não crashar se ícone não existe
+NMWIDGETS="/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py"
 if [ -f "$NMWIDGETS" ]; then
+    cp "$NMWIDGETS" "$NMWIDGETS.bak"
     python3 << 'PYEOF'
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "r") as f:
     content = f.read()
 
 # Patch configure_icons para não falhar se load_icon falhar
 old_configure = '''    def configure_icons(self):
+        it = Gtk.IconTheme()
         default = Gtk.IconTheme.get_default()
-        self.ap_icon = default.load_icon("network-wireless", 22, 0)
-        self.ap_active_icon = default.load_icon("network-wireless-acquiring", 22, 0)
-        self.wired_icon = default.load_icon("network-wired", 22, 0)
-        self.wired_active_icon = default.load_icon("network-wired-acquiring", 22, 0)
-        self.vpn_icon = default.load_icon("network-vpn", 22, 0)
-        self.vpn_active_icon = default.load_icon("network-vpn-acquiring", 22, 0)
-        self.bluetooth_icon = default.load_icon("bluetooth", 22, 0)
-        self.bluetooth_active_icon = default.load_icon("bluetooth-active", 22, 0)
-        self.ethernet_icon = default.load_icon("network-wired", 22, 0)
-        self.ethernet_active_icon = default.load_icon("network-wired-acquiring", 22, 0)
-        self.missing_icon = default.load_icon("image-missing", 22, 0)'''
+        default = default.load_icon("image-missing", 22, 0)
+        it.set_custom_theme('ubuntu-mono-light')
+        self.icons = []
+        for n in ['nm-signal-00',
+                  'nm-signal-25',
+                  'nm-signal-50',
+                  'nm-signal-75',
+                  'nm-signal-100',
+                  'nm-signal-00-secure',
+                  'nm-signal-25-secure',
+                  'nm-signal-50-secure',
+                  'nm-signal-75-secure',
+                  'nm-signal-100-secure']:
+            ico = it.lookup_icon(n, 22, 0)
+            if ico:
+                ico = ico.load_icon()
+            else:
+                ico = default
+            self.icons.append(ico)'''
 
 new_configure = '''    def configure_icons(self):
-        default = Gtk.IconTheme.get_default()
-        def safe_load(name, size=22):
-            try:
-                return default.load_icon(name, size, 0)
-            except Exception:
-                return None
-        self.ap_icon = safe_load("network-wireless")
-        self.ap_active_icon = safe_load("network-wireless-acquiring")
-        self.wired_icon = safe_load("network-wired")
-        self.wired_active_icon = safe_load("network-wired-acquiring")
-        self.vpn_icon = safe_load("network-vpn")
-        self.vpn_active_icon = safe_load("network-vpn-acquiring")
-        self.bluetooth_icon = safe_load("bluetooth")
-        self.bluetooth_active_icon = safe_load("bluetooth-active")
-        self.ethernet_icon = safe_load("network-wired")
-        self.ethernet_active_icon = safe_load("network-wired-acquiring")
-        self.missing_icon = safe_load("image-missing")'''
+        it = Gtk.IconTheme()
+        default_theme = Gtk.IconTheme.get_default()
+        # Safe load with fallback
+        try:
+            default = default_theme.load_icon("image-missing", 22, 0)
+        except Exception:
+            # Create a blank pixbuf as fallback
+            from gi.repository import GdkPixbuf
+            default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)
+            default.fill(0x00000000)
+        it.set_custom_theme('ubuntu-mono-light')
+        self.icons = []
+        for n in ['nm-signal-00',
+                  'nm-signal-25',
+                  'nm-signal-50',
+                  'nm-signal-75',
+                  'nm-signal-100',
+                  'nm-signal-00-secure',
+                  'nm-signal-25-secure',
+                  'nm-signal-50-secure',
+                  'nm-signal-75-secure',
+                  'nm-signal-100-secure']:
+            ico = it.lookup_icon(n, 22, 0)
+            if ico:
+                try:
+                    ico = ico.load_icon()
+                except Exception:
+                    ico = default
+            else:
+                ico = default
+            self.icons.append(ico)'''
 
 content = content.replace(old_configure, new_configure)
-
-# Também patchar onde usa missing_icon para checar se é None
-old_pixbuf = '''        if self.missing_icon:
-            pixbuf = self.missing_icon'''
-
-new_pixbuf = '''        if self.missing_icon:
-            pixbuf = self.missing_icon
-        else:
-            return False'''
-
-content = content.replace(old_pixbuf, new_pixbuf)
 
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w") as f:
     f.write(content)
 
-print("nmwidgets.py configure_icons patchado (ícones faltando)")
+print("nmwidgets.py configure_icons patchado (código real)")
 PYEOF
 else
     echo "[patch] AVISO: $NMWIDGETS não encontrado (patch 4)"
