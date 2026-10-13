@@ -89,7 +89,7 @@ jobs:
           systemctl --global mask snapd.service 2>/dev/null || true
           apt autoremove -y || true
           echo "=== [7b/7] remove ferramentas de build (leveza) ==="
-          apt purge -y make meson ninja-build sassc zip gettext 2>/dev/null || true
+          apt purge -y make meson ninja-build sassc zip gettext libglib2.0-dev 2>/dev/null || true
           apt autoremove -y || true
           dpkg -l | grep -E "make|meson|ninja|sassc" | grep "^ii" || echo "build-tools removidas"
           apt clean
