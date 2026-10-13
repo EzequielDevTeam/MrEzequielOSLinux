@@ -61,6 +61,10 @@ echo "[visual] Patches de branding (update-manager + ubiquity)..."
 chmod +x "$BASE/tools/mrezequielos-branding-patches.sh" 2>/dev/null || true
 "$BASE/tools/mrezequielos-branding-patches.sh" || echo "AVISO patches falharam"
 
+echo "[visual] Visual do Ubiquity (logo, welcome, slideshow)..."
+chmod +x "$BASE/tools/mrezequielos-ubiquity-visual.sh" 2>/dev/null || true
+"$BASE/tools/mrezequielos-ubiquity-visual.sh" || echo "AVISO ubiquity visual falhou"
+
 echo "[visual] Extensões estilo Zorin..."
 chmod +x "$BASE/gnome/install-extensions.sh" "$BASE/gnome/mrezequielos-appearance" 2>/dev/null || true
 "$BASE/gnome/install-extensions.sh" || echo "AVISO extensões falharam, seguindo"

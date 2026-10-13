@@ -150,6 +150,8 @@ gtk-update-icon-cache -f /usr/share/icons/ZorinPurple-Dark 2>/dev/null || true
 gtk-update-icon-cache -f /usr/share/icons/Papirus-Dark 2>/dev/null || true
 echo "# Patches de branding (update-manager + ubiquity)..."
 "\$TOP/config/tools/mrezequielos-branding-patches.sh" || echo "# AVISO patches falharam"
+echo "# Visual do Ubiquity (logo, welcome, slideshow)..."
+"\$TOP/config/tools/mrezequielos-ubiquity-visual.sh" || echo "# AVISO ubiquity visual falhou"
 echo "# Verificando o novo..."
 THEME_OK=1
 for d in /usr/share/themes/ZorinPurple-Dark /usr/share/icons/ZorinPurple-Dark; do
