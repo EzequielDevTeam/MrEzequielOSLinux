@@ -104,11 +104,7 @@ new_get_state = """    def get_state(self):
 content = content.replace(old_get_state, new_get_state)
 
 # 3b. SUBSTITUIR configure_icons INTEIRO por versão robusta
-# Encontrar o método configure_icons e substituir tudo até o próximo método
 import re
-
-# Padrão: def configure_icons(self): ... até o próximo "    def " ou fim da classe
-old_configure_pattern = r'    def configure_icons\(self\):.*?(?=\n    def |\nclass |\Z)'
 
 new_configure = '''    def configure_icons(self):
         it = Gtk.IconTheme()
@@ -139,13 +135,57 @@ new_configure = '''    def configure_icons(self):
                 ico = default
             self.icons.append(ico)'''
 
-# Usar regex DOTALL para pegar múltiplas linhas
-content = re.sub(old_configure_pattern, new_configure, content, flags=re.DOTALL)
+# Tentar regex DOTALL
+old_configure_pattern = r'    def configure_icons\(self\):.*?(?=\n    def |\nclass |\Z)'
+new_content, count = re.subn(old_configure_pattern, new_configure, content, flags=re.DOTALL)
+
+if count == 0:
+    # Regex não casou - fazer replace mais agressivo linha a linha
+    print("[patch] Regex não casou, tentando replace linha a linha...")
+    lines = content.split('\n')
+    new_lines = []
+    in_configure = False
+    brace_count = 0
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith('def configure_icons'):
+            in_configure = True
+            brace_count = 0
+            new_lines.append(new_configure)
+            continue
+        if in_configure:
+            # Contar indentação para saber quando o método acaba
+            if stripped and not stripped.startswith('#'):
+                # Próximo método ou classe
+                if stripped.startswith('def ') or stripped.startswith('class '):
+                    in_configure = False
+                    new_lines.append(line)
+                # Skip linhas do método antigo
+                continue
+            else:
+                continue
+        else:
+            new_lines.append(line)
+    content = '\n'.join(new_lines)
+else:
+    content = new_content
+    print("[patch] Regex substituiu configure_icons (count={})".format(count))
+
+# VERIFICAÇÃO: confirmar que não tem mais load_icon("image-missing")
+if 'load_icon("image-missing")' in content or \"load_icon('image-missing')\" in content:
+    print("[patch] AVISO: load_icon('image-missing') AINDA PRESENTE no código!")
+    # Force replace qualquer ocorrência restante
+    content = content.replace('default_theme.load_icon("image-missing", 22, 0)', '# REMOVIDO: load_icon image-missing')
+    content = content.replace("default.load_icon('image-missing', 22, 0)", "# REMOVIDO: load_icon image-missing")
+    content = content.replace('default.load_icon("image-missing", 22, 0)', '# REMOVIDO: load_icon image-missing')
+    print("[patch] Forçado remoção de load_icon image-missing")
+else:
+    print("[patch] OK: load_icon('image-missing') removido completamente")
 
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w") as f:
     f.write(content)
 
-print("nmwidgets.py patchado (get_state + configure_icons robusto)")
+print("nmwidgets.py patchado (get_state + configure_icons robusto + verificação)")
 PYEOF
 else
     echo "[patch] AVISO: $NMWIDGETS não encontrado"
