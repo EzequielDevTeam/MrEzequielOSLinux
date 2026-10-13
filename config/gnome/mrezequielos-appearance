@@ -85,7 +85,7 @@ apply_ubuntu() {
 }
 
 pin_apps() {
-  dconf write /org/gnome/shell/extensions/arcmenu/pinned-apps "'[[{\"id\": \"brave-browser.desktop\"}, {\"id\": \"org.gnome.Nautilus.desktop\"}], [{\"id\": \"org.gnome.Terminal.desktop\"}], [{\"id\": \"org.gnome.Software.desktop\"}], [{\"id\": \"libreoffice-writer.desktop\"}], [{\"id\": \"mrezequielos-help.desktop\"}]]'" || true
+  dconf write /org/gnome/shell/extensions/arcmenu/pinned-apps "'[[{\"id\": \"brave-browser.desktop\"}, {\"id\": \"org.gnome.Nautilus.desktop\"}], [{\"id\": \"org.gnome.Terminal.desktop\"}], [{\"id\": \"gnome-control-center.desktop\"}], [{\"id\": \"org.gnome.Software.desktop\"}], [{\"id\": \"libreoffice-writer.desktop\"}], [{\"id\": \"org.gnome.Calculator.desktop\"}], [{\"id\": \"mrezequielos-help.desktop\"}]]'" || true
 }
 
 pick_layout() {
