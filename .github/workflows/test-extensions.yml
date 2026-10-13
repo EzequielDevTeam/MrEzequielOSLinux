@@ -17,7 +17,7 @@ jobs:
       - name: Instalar GNOME mínimo headless
         run: |
           sudo apt update
-          sudo apt install -y gnome-shell dbus-x11 python3 unzip curl gir1.2-gmenu-3.0 gir1.2-gnomedesktop-3.0
+          sudo apt install -y gnome-shell dbus-x11 python3 unzip curl git make meson ninja-build gettext zip libglib2.0-bin gir1.2-gmenu-3.0 gir1.2-gnomedesktop-3.0
 
       - name: Instalar extensões (mesmo script da ISO)
         run: |
