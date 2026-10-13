@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MrEzequielOS — Ubuntu com cara de Zorin</title>
+<meta name="description" content="MrEzequielOS 2.0 LTS: Ubuntu 26.04 com taskbar, menu iniciar, temas do Zorin e atualização sem formatar.">
+<!--
+  DESIGN (decisões escritas):
+  - Paleta = identidade do projeto: fundo ameixa #1A0533, superfícies #241040,
+    texto branco, secundário lavanda #C9B4DC, destaque laranja #E95420.
+  - Laranja aparece SÓ no botão principal de download e nos números de versão.
+    Branco sobre laranja falha AA (3.66), então o CTA usa texto ameixa (5.15).
+  - Raios: cards 14px, botões 10px, miniaturas 10px. Nada de pílula em tudo.
+  - Sem gradiente decorativo, sem blur, sem sombra, sem animação, sem emoji.
+  - Tudo aqui existe de verdade: links, versões e requisitos conferem com o repo.
+-->
+<style>
+  :root{
+    --bg:#1A0533; --surface:#241040; --surface2:#2D0A4E;
+    --line:rgba(255,255,255,.14); --text:#FFFFFF; --muted:#C9B4DC;
+    --accent:#E95420; --accent-ink:#1A0533;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Ubuntu,Roboto,sans-serif;
+    line-height:1.6;
+  }
+  a{color:var(--text)}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:4px}
+  .skip{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; font-weight:700; z-index:99}
+  .skip:focus{left:0}
+  .wrap{max-width:1020px; margin:0 auto; padding:0 1.25rem}
+  header.site{border-bottom:1px solid var(--line)}
+  .nav{display:flex; align-items:center; gap:1.25rem; padding:.9rem 0; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:.6rem; font-weight:800; font-size:1.1rem; text-decoration:none; margin-right:auto}
+  .brand img{width:34px; height:34px}
+  .nav a.link{color:var(--muted); text-decoration:none; font-size:.95rem}
+  .nav a.link:hover{color:var(--text); text-decoration:underline}
+  .hero{display:grid; grid-template-columns:1.05fr .95fr; gap:2.5rem; align-items:center; padding:3.5rem 0 3rem}
+  @media (max-width:820px){ .hero{grid-template-columns:1fr; padding:2.25rem 0} }
+  .hero h1{font-size:2.6rem; line-height:1.12; margin:0 0 1rem}
+  @media (max-width:820px){ .hero h1{font-size:2rem} }
+  .hero p.lead{color:var(--muted); font-size:1.1rem; margin:0 0 1.75rem}
+  .cta-row{display:flex; gap:.8rem; flex-wrap:wrap}
+  .btn{display:inline-block; padding:.8rem 1.5rem; border-radius:10px; font-weight:800; text-decoration:none; border:1px solid transparent}
+  .btn-primary{background:var(--accent); color:var(--accent-ink)}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-ghost{border-color:var(--line); color:var(--text)}
+  .btn-ghost:hover{border-color:var(--text)}
+  figure.shot{margin:0; border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface)}
+  figure.shot img{display:block; width:100%; height:auto}
+  figure.shot figcaption{padding:.6rem 1rem; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line)}
+  section.block{padding:2.75rem 0; border-top:1px solid var(--line)}
+  section.block h2{font-size:1.7rem; margin:0 0 .5rem}
+  section.block p.kicker{color:var(--muted); margin:0 0 1.5rem; max-width:60ch}
+  .layouts{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem}
+  @media (max-width:820px){ .layouts{grid-template-columns:1fr} }
+  .layout{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--surface)}
+  .layout img{display:block; width:100%; height:auto; background:#fff}
+  .layout div{padding:.9rem 1.1rem}
+  .layout h3{margin:0 0 .25rem; font-size:1.05rem}
+  .layout p{margin:0; color:var(--muted); font-size:.92rem}
+  dl.apps{display:grid; grid-template-columns:1fr 1fr; gap:0 2.5rem; margin:0}
+  @media (max-width:820px){ dl.apps{grid-template-columns:1fr} }
+  dl.apps > div{padding:.9rem 0; border-top:1px solid var(--line)}
+  dl.apps dt{font-weight:800}
+  dl.apps dd{margin:.15rem 0 0; color:var(--muted); font-size:.95rem}
+  ol.steps{margin:0; padding-left:1.25rem; display:grid; gap:1rem}
+  ol.steps li::marker{color:var(--accent); font-weight:800}
+  ol.steps strong{display:block}
+  ol.steps span{color:var(--muted); font-size:.95rem}
+  ul.reqs{margin:0; padding-left:1.25rem; display:grid; gap:.5rem; max-width:60ch}
+  ul.reqs li::marker{color:var(--accent)}
+  .dl-box{border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:1.5rem; display:grid; gap:.9rem}
+  .dl-meta{display:flex; gap:1.5rem; flex-wrap:wrap; color:var(--muted); font-size:.95rem}
+  .dl-meta strong{color:var(--accent)}
+  .note{color:var(--muted); font-size:.9rem; max-width:70ch}
+  footer.site{border-top:1px solid var(--line); padding:2rem 0 2.5rem; color:var(--muted); font-size:.9rem}
+  footer.site nav{display:flex; gap:1.25rem; flex-wrap:wrap; margin:.75rem 0}
+  footer.site a{color:var(--muted)}
+  footer.site a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<header class="site">
+  <div class="wrap nav">
+    <a class="brand" href="#topo"><img src="assets/logo.svg" alt="Logo MrEzequielOS" width="34" height="34">MrEzequielOS</a>
+    <a class="link" href="#visual">Visual</a>
+    <a class="link" href="#apps">Aplicativos</a>
+    <a class="link" href="#atualizar">Atualizar</a>
+    <a class="link" href="#requisitos">Requisitos</a>
+    <a class="link" href="#download">Download</a>
+    <a class="link" href="https://github.com/EzequielDevTeam/MrEzequielOSLinux">GitHub</a>
+  </div>
+</header>
+<main id="conteudo">
+  <div class="wrap hero" id="topo">
+    <div>
+      <h1>Ubuntu 26.04 com cara de Zorin, leve e em português.</h1>
+      <p class="lead">Taskbar embaixo, menu iniciar com nossa logo, temas oficiais do Zorin e atualização que não apaga nada. Sem snap, sem telemetria.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#download">Baixar a ISO 2.0</a>
+        <a class="btn btn-ghost" href="https://github.com/EzequielDevTeam/MrEzequielOSLinux">Ver o código</a>
+      </div>
+    </div>
+    <figure class="shot">
+      <img src="assets/wallpaper.svg" alt="Papel de parede padrão do MrEzequielOS em roxo e laranja" width="960" height="540">
+      <figcaption>Área de trabalho padrão do sistema.</figcaption>
+    </figure>
+  </div>
+
+  <div class="wrap">
+  <section class="block" id="visual" aria-labelledby="t-visual">
+    <h2 id="t-visual">Três jeitos de usar, troca num clique</h2>
+    <p class="kicker">O app Appearance muda entre Windows, macOS e Ubuntu sem terminal. Estas são as miniaturas reais usadas nele.</p>
+    <div class="layouts">
+      <article class="layout">
+        <img src="assets/layout-windows.svg" alt="Miniatura do layout Windows: barra inferior com botão iniciar à esquerda" width="320" height="200">
+        <div><h3>Windows</h3><p>Barra embaixo com menu iniciar. Vem ativado por padrão.</p></div>
+      </article>
+      <article class="layout">
+        <img src="assets/layout-mac.svg" alt="Miniatura do layout macOS: barra superior e dock inferior" width="320" height="200">
+        <div><h3>macOS</h3><p>Barra em cima e dock embaixo no centro.</p></div>
+      </article>
+      <article class="layout">
+        <img src="assets/layout-ubuntu.svg" alt="Miniatura do layout Ubuntu: barra lateral esquerda" width="320" height="200">
+        <div><h3>Ubuntu</h3><p>Barra lateral esquerda, estilo original.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="block" id="apps" aria-labelledby="t-apps">
+    <h2 id="t-apps">O que já vem instalado</h2>
+    <p class="kicker">Nada de snap. Tudo pacote .deb, atualizável pela Loja.</p>
+    <dl class="apps">
+      <div><dt>Brave</dt><dd>Navegador principal, rápido e sem rastreadores.</dd></div>
+      <div><dt>Firefox</dt><dd>Reserva, via repositório oficial da Mozilla.</dd></div>
+      <div><dt>LibreOffice</dt><dd>Writer, Calc e Impress em português.</dd></div>
+      <div><dt>Loja + Software Updater</dt><dd>Instala apps e atualizações com janela, sem terminal.</dd></div>
+    </dl>
+  </section>
+
+  <section class="block" id="atualizar" aria-labelledby="t-atualizar">
+    <h2 id="t-atualizar">Atualiza sem formatar</h2>
+    <p class="kicker">Versões menores chegam pelo app Atualização do Sistema.</p>
+    <ol class="steps">
+      <li><strong>O sistema avisa sozinho</strong><span>Uma checagem semanal procura releases novos no GitHub.</span></li>
+      <li><strong>Você escolhe a versão</strong><span>Uma janela lista o que mudou. Nada acontece sem confirmar.</span></li>
+      <li><strong>Aplica com backup e volta atrás</strong><span>Antes de trocar, salva suas configs. Se algo vier incompleto, restaura e aborta em vez de quebrar.</span></li>
+    </ol>
+  </section>
+
+  <section class="block" id="requisitos" aria-labelledby="t-requisitos">
+    <h2 id="t-requisitos">Requisitos</h2>
+    <ul class="reqs">
+      <li>PC ou notebook 64 bits com 4 GB de RAM (roda com 2 GB, devagar)</li>
+      <li>25 GB livres no disco e um pendrive de 8 GB pra gravar a ISO</li>
+      <li>Secure Boot desligado na BIOS para dar boot no pendrive</li>
+      <li>Internet na hora de instalar os pacotes de idioma e drivers</li>
+    </ul>
+  </section>
+
+  <section class="block" id="download" aria-labelledby="t-download">
+    <h2 id="t-download">Download da 2.0 LTS</h2>
+    <div class="dl-box">
+      <div class="dl-meta"><span>Versão <strong>2.0 LTS</strong></span><span>Base <strong>Ubuntu 26.04</strong></span><span>ISO <strong>~2,9 GB</strong></span></div>
+      <p class="note" style="margin:0">A ISO mora nos Artifacts de build do GitHub, então o download pede login grátis lá. Grave com BalenaEtcher, Ventoy ou Rufus em modo DD, boot com Secure Boot desligado e teste o modo live antes de instalar.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/EzequielDevTeam/MrEzequielOSLinux/releases/tag/v2.0">Página da versão 2.0</a>
+      </div>
+    </div>
+  </section>
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <div>MrEzequielOS — código GPLv3, nome e identidade reservados ao projeto.</div>
+    <nav aria-label="Links do projeto">
+      <a href="https://github.com/EzequielDevTeam/MrEzequielOSLinux">Código-fonte</a>
+      <a href="https://github.com/EzequielDevTeam/MrEzequielOSLinux/issues">Reportar bug</a>
+      <a href="https://www.ubuntu.com/">Ubuntu (base)</a>
+      <a href="https://zorin.com/os/">Zorin OS (inspiração)</a>
+    </nav>
+    <div>Feito sobre Ubuntu, GNOME, Mozilla e LibreOffice. Temas, taskbar e menu com créditos aos autores originais, dentro do sistema.</div>
+  </div>
+</footer>
+</body>
+</html>

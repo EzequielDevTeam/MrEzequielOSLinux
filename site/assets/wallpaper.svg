@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1A0533"/>
+      <stop offset="45%" stop-color="#4A0E6B"/>
+      <stop offset="75%" stop-color="#A3247A"/>
+      <stop offset="100%" stop-color="#E95420"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="20%" stop-color="#FFEAD9" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <ellipse cx="960" cy="455" rx="650" ry="340" fill="url(#glow)"/>
+  <circle cx="960" cy="455" r="145" fill="none" stroke="#FFFFFF" stroke-width="32" opacity="0.98"/>
+  <circle cx="960" cy="455" r="48" fill="#FFFFFF" opacity="0.98"/>
+  <text x="960" y="720" font-family="Ubuntu, Sans-Serif" font-size="92" font-weight="300" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">MrEzequielOS</text>
+  <text x="960" y="775" font-family="Ubuntu, Sans-Serif" font-size="28" fill="#FFFFFF" opacity="0.75" text-anchor="middle" letter-spacing="6">UBUNTU BASED • GNOME • LEVE</text>
+  <rect x="0" y="1076" width="1920" height="4" fill="#E95420"/>
+</svg>
