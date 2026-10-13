@@ -51,3 +51,4 @@ sudo apt install cubic
 # na aba terminal cole o conteúdo de packages.list
 ```
 # trigger
+# trigger
