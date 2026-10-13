@@ -1,5 +1,5 @@
 # MrEzequielOS 🐧
-Baseado no Ubuntu 24.04 LTS (Noble) + GNOME Minimal estilo Zorin OS (leve e bonito).
+Baseado no Ubuntu 26.04 LTS (Resolute) + GNOME Minimal estilo Zorin OS (leve e bonito).
 
 **Licença:** código sob [GPLv3](LICENSE) — pode estudar e modificar, mas quem
 redistribuir tem que manter aberto. Nome, logo e identidade visual são marca
@@ -36,7 +36,7 @@ gh repo create MrEzequielOS --public --source=. --push
 2. Vá em Actions > build-iso > Run workflow
 3. Baixe a ISO em Artifacts (fica pronta em ~20-30min)
 
-### Opção B - Local (precisa Ubuntu 24.04)
+### Opção B - Local (precisa Ubuntu 26.04)
 ```bash
 chmod +x build.sh
 sudo ./build.sh
@@ -47,6 +47,6 @@ sudo ./build.sh
 Se quiser personalizar na mão:
 ```bash
 sudo apt install cubic
-# Abra o Cubic, escolha ubuntu-24.04-desktop-amd64.iso como base,
+# Abra o Cubic, escolha ubuntu-26.04-desktop-amd64.iso como base,
 # na aba terminal cole o conteúdo de packages.list
 ```

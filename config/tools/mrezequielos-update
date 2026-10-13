@@ -49,6 +49,12 @@ echo "# Abrindo pacote..."
 tar xzf "\$TMPD/sys.tar.gz" -C "\$TMPD" || { echo "FALHA-TAR"; rm -rf "\$TMPD"; exit 1; }
 TOP=\$(find "\$TMPD" -maxdepth 1 -type d -name "MrEzequielOSLinux-*" | head -1)
 [ -z "\$TOP" ] && { echo "FALHA-LAYOUT"; rm -rf "\$TMPD"; exit 1; }
+NEWBASE=\$(grep -E "^UBUNTU_CODENAME=" "\$TOP/config/branding/os-release" 2>/dev/null | cut -d= -f2)
+CURBASE=\$(grep -E "^UBUNTU_CODENAME=" /etc/os-release 2>/dev/null | cut -d= -f2)
+if [ -n "\$NEWBASE" ] && [ -n "\$CURBASE" ] && [ "\$NEWBASE" != "\$CURBASE" ]; then
+  echo "FALHA-BASE: pacote da base \$NEWBASE, sistema na base \$CURBASE. Versao grande exige instalacao limpa."
+  rm -rf "\$TMPD"; exit 1
+fi
 LIB="\$TOP/config/tools/mre-apply-lib.sh"
 [ -f "\$LIB" ] || { echo "FALHA-LIB"; rm -rf "\$TMPD"; exit 1; }
 . "\$LIB"

@@ -6,7 +6,7 @@
 # Método 2 (fallback): git + make/meson
 # Roda no chroot durante o build. Falha isolada não quebra o build.
 set -u
-SHELL_VER="${GNOME_SHELL_VERSION:-46}"
+SHELL_VER="${GNOME_SHELL_VERSION:-50}"
 EGO="https://extensions.gnome.org/download-extension"
 EXT_DIR="/usr/share/gnome-shell/extensions"
 TMP="/tmp/mre-ext"

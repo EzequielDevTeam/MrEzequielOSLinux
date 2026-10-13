@@ -24,7 +24,7 @@ jobs:
           chmod +x config/gnome/install-extensions.sh
           sudo bash config/gnome/install-extensions.sh
 
-      - name: Validar metadata (shell 46 em cada zip)
+      - name: Validar metadata (shell 50 em cada zip)
         run: |
           python3 - <<'EOF'
           import zipfile, json, glob, sys
@@ -36,9 +36,9 @@ jobs:
                   print('SEM metadata:', d, e); ok = False; continue
               svm = m.get('shell-version-map') or {}
               sv = m.get('shell-version') or []
-              has46 = ('46' in [str(x) for x in svm.keys()]) or ('46' in [str(x) for x in sv])
-              print(('OK  ' if has46 else 'RUIM'), m.get('uuid'), 'v' + str(m.get('version')), '| map:', sorted(svm.keys(), key=str) if svm else sv)
-              if not has46 and 'schneegans' not in d and 'jderose' not in d and 'arcmenu' not in d and 'aunetx' not in d and 'rastersoft' not in d and 'rgcjonas' not in d:
+              has50 = ('50' in [str(x) for x in svm.keys()]) or ('50' in [str(x) for x in sv])
+              print(('OK  ' if has50 else 'RUIM'), m.get('uuid'), 'v' + str(m.get('version')), '| map:', sorted(svm.keys(), key=str) if svm else sv)
+              if not has50 and 'schneegans' not in d and 'jderose' not in d and 'arcmenu' not in d and 'aunetx' not in d and 'rastersoft' not in d and 'rgcjonas' not in d:
                   pass
           sys.exit(0)
           EOF
