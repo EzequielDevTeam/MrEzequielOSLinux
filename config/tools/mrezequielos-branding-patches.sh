@@ -226,4 +226,24 @@ for theme in /usr/share/icons/*/; do
     fi
 done
 
+# 6. Resolver symlinks do image-missing.png no tema Zorin (evita bwrap crash)
+echo "[patch] Resolvendo symlinks do image-missing.png no Zorin..."
+for sz in 16x16 22x22 24x24 32x32 48x48; do
+    ICON="/usr/share/icons/Zorin/${sz}/status/image-missing.png"
+    if [ -L "$ICON" ]; then
+        REAL="$(readlink -f "$ICON")"
+        if [ -f "$REAL" ]; then
+            cp "$REAL" "$ICON.tmp" && mv "$ICON.tmp" "$ICON"
+            echo "[patch] Resolvido symlink: $ICON -> arquivo real"
+        fi
+    fi
+done
+
+# 7. Regenerar cache após resolver symlinks
+for theme in /usr/share/icons/*/; do
+    if [ -f "$theme/index.theme" ]; then
+        gtk-update-icon-cache -f "$theme" 2>/dev/null || true
+    fi
+done
+
 echo "[patch] Todos os patches aplicados"
