@@ -22,6 +22,7 @@ CORE_EXTS = [
     'zorin-taskbar@zorinos.com',
     'arcmenu@arcmenu.com',
     'appindicatorsupport@rgcjonas.gmail.com',
+    'zorin-connect@zorinos.com',
     'user-theme@gnome-shell-extensions.gcampax.github.com',
 ]
 OPT_EXTS = [

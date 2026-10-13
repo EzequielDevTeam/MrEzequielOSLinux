@@ -26,7 +26,7 @@ button-layout='close,minimize,maximize:'
 
 [org/gnome/shell]
 favorite-apps=['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']
-enabled-extensions=['zorin-taskbar@zorinos.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']
+enabled-extensions=['zorin-taskbar@zorinos.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'zorin-connect@zorinos.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']
 disable-user-extensions=false
 
 [org/gnome/shell/extensions/zorin-taskbar]

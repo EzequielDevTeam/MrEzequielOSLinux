@@ -12,7 +12,7 @@ EXT_DIR="/usr/share/gnome-shell/extensions"
 TMP="/tmp/mre-ext"
 mkdir -p "$EXT_DIR" "$TMP"
 cd "$TMP"
-UUIDS="zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com"
+UUIDS="zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com zorin-connect@zorinos.com"
 declare -A MINVER=(
   [zorin-taskbar@zorinos.com]=70
   [arcmenu@arcmenu.com]=74
@@ -101,6 +101,25 @@ git_appindicator() {
   cd gnome-shell-extension-appindicator && meson setup build --prefix=/usr && ninja -C build install || { cd ..; return 1; }
   cd ..
 }
+git_zorinconnect() {
+  local UUID="zorin-connect@zorinos.com"
+  rm -rf zorin-connect && git clone --depth 1 https://github.com/ZorinOS/gnome-shell-extension-zorin-connect.git zorin-connect || return 1
+  python3 - zorin-connect/data/metadata.json.in <<'PYEOF' || return 1
+import sys
+s = open('zorin-connect/data/metadata.json.in').read()
+assert '"uuid": "zorin-connect@zorinos.com"' in s, 'uuid errado'
+assert '"46"' in s, 'sem GNOME 46'
+s = s.replace('"name": "Zorin Connect"', '"name": "MrEzequielOS Connect"')
+s = s.replace('remote control."', 'remote control. [Baseado no Zorin Connect (GPL-2.0-or-later) do Zorin Group.]"')
+open('zorin-connect/data/metadata.json.in', 'w').write(s)
+print('rebrand connect OK')
+PYEOF
+  cd zorin-connect || return 1
+  (meson setup build --prefix=/usr && ninja -C build install) || { cd ..; return 1; }
+  cd ..
+  chmod -R a+rX "/usr/share/gnome-shell/extensions/$UUID" 2>/dev/null || true
+  [ -f "/usr/share/gnome-shell/extensions/$UUID/metadata.json" ] || return 1
+}
 
 for uuid in $UUIDS; do
   if install_ego "$uuid"; then
@@ -114,6 +133,7 @@ for uuid in $UUIDS; do
     blur-my-shell*) git_blur ;;
     ding*) git_ding ;;
     appindicator*) git_appindicator ;;
+    zorin-connect*) git_zorinconnect ;;
     *) echo "[ext] sem fallback git para $uuid"; return 1 ;;
   esac && echo "[ext] OK(git): $uuid" || echo "[ext] FALHOU: $uuid"
 done

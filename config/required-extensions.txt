@@ -8,3 +8,4 @@ appindicatorsupport@rgcjonas.gmail.com
 burn-my-windows@schneegans.github.com
 desktop-cube@schneegans.github.com
 dash-to-dock@micxgx.gmail.com
+zorin-connect@zorinos.com

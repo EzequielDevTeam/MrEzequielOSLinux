@@ -47,6 +47,8 @@ if [ "\$FW" = "1" ]; then
   ufw --force enable 2>/dev/null || true
   ufw default deny incoming 2>/dev/null || true
   ufw default allow outgoing 2>/dev/null || true
+  ufw allow 1714:1764/tcp 2>/dev/null || true
+  ufw allow 1714:1764/udp 2>/dev/null || true
 fi
 if [ "\$AU" = "1" ]; then
   echo "# Updates automaticos..."

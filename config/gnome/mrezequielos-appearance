@@ -36,7 +36,7 @@ apply_windows() {
   gsettings set org.gnome.desktop.background picture-uri 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
   gsettings set org.gnome.desktop.background picture-uri-dark 'file:///usr/share/backgrounds/mrezequielos-wallpaper.svg' || true
   gsettings set org.gnome.shell favorite-apps "['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']" || true
-  gsettings set org.gnome.shell enabled-extensions "['zorin-taskbar@zorinos.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']" || true
+  gsettings set org.gnome.shell enabled-extensions "['zorin-taskbar@zorinos.com', 'arcmenu@arcmenu.com', 'blur-my-shell@aunetx', 'ding@rastersoft.com', 'appindicatorsupport@rgcjonas.gmail.com', 'zorin-connect@zorinos.com', 'user-theme@gnome-shell-extensions.gcampax.github.com']" || true
   gsettings set org.gnome.shell disable-user-extensions false || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-positions "'{\"0\":\"BOTTOM\"}'" || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-sizes "'{\"0\":48}'" || true
