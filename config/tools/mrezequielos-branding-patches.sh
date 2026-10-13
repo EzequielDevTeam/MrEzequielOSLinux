@@ -84,7 +84,7 @@ else
     echo "[patch] AVISO: $UBI_WIRELESS não encontrado"
 fi
 
-# 3. Patch nmwidgets.py - get_state mais defensivo
+# 3. Patch nmwidgets.py - get_state mais defensivo + configure_icons robusto
 NMWIDGETS="/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py"
 if [ -f "$NMWIDGETS" ]; then
     cp "$NMWIDGETS" "$NMWIDGETS.bak"
@@ -92,70 +92,100 @@ if [ -f "$NMWIDGETS" ]; then
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "r") as f:
     content = f.read()
 
-old = """    def get_state(self):
+# 3a. get_state defensivo
+old_get_state = """    def get_state(self):
         return self.view.get_state()"""
 
-new = """    def get_state(self):
+new_get_state = """    def get_state(self):
         if hasattr(self, "view") and self.view:
             return self.view.get_state()
         return 0"""
 
-content = content.replace(old, new)
+content = content.replace(old_get_state, new_get_state)
 
-# 4. Patch configure_icons - EXATO do Ubuntu 26.04 (extraído do .deb)
-# Procurar e substituir a linha problemática específica
-lines = content.split('\n')
-new_lines = []
-i = 0
-while i < len(lines):
-    line = lines[i]
-    # Linha exata que crasha: default = default.load_icon("image-missing", 22, 0)
-    if 'default = default.load_icon("image-missing", 22, 0)' in line:
-        # Substituir essa linha e adicionar fallback
-        indent = line[:len(line) - len(line.lstrip())]
-        new_lines.append(indent + 'try:')
-        new_lines.append(indent + '    default = default_theme.load_icon("image-missing", 22, 0)')
-        new_lines.append(indent + 'except Exception:')
-        new_lines.append(indent + '    from gi.repository import GdkPixbuf')
-        new_lines.append(indent + '    default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)')
-        new_lines.append(indent + '    default.fill(0x00000000)')
-        # Também precisa mudar a linha anterior: default = Gtk.IconTheme.get_default()
-        # para: default_theme = Gtk.IconTheme.get_default()
-        # Vamos achar e corrigir a linha anterior
-        if new_lines and 'default = Gtk.IconTheme.get_default()' in new_lines[-1]:
-            new_lines[-1] = indent + 'default_theme = Gtk.IconTheme.get_default()'
-    else:
-        new_lines.append(line)
-    i += 1
+# 3b. SUBSTITUIR configure_icons INTEIRO por versão robusta
+# Encontrar o método configure_icons e substituir tudo até o próximo método
+import re
 
-content = '\n'.join(new_lines)
+# Padrão: def configure_icons(self): ... até o próximo "    def " ou fim da classe
+old_configure_pattern = r'    def configure_icons\(self\):.*?(?=\n    def |\nclass |\Z)'
 
-# 4b. Também proteger ico.load_icon() dentro do loop - line by line
-lines = content.split('\n')
-new_lines = []
-for line in lines:
-    stripped = line.lstrip()
-    if stripped == 'ico = ico.load_icon()':
-        indent = line[:len(line) - len(stripped)]
-        new_lines.append(indent + 'try:')
-        new_lines.append(indent + '    ico = ico.load_icon()')
-        new_lines.append(indent + 'except Exception:')
-        new_lines.append(indent + '    ico = default')
-    else:
-        new_lines.append(line)
+new_configure = '''    def configure_icons(self):
+        it = Gtk.IconTheme()
+        default_theme = Gtk.IconTheme.get_default()
+        # Safe load with fallback - não crashar se ícone não existe
+        try:
+            default = default_theme.load_icon("image-missing", 22, 0)
+        except Exception:
+            from gi.repository import GdkPixbuf
+            default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)
+            default.fill(0x00000000)
+        it.set_custom_theme('ubuntu-mono-light')
+        self.icons = []
+        for n in ['nm-signal-00',
+                  'nm-signal-25',
+                  'nm-signal-50',
+                  'nm-signal-75',
+                  'nm-signal-100',
+                  'nm-signal-00-secure',
+                  'nm-signal-25-secure',
+                  'nm-signal-50-secure',
+                  'nm-signal-75-secure',
+                  'nm-signal-100-secure']:
+            ico = it.lookup_icon(n, 22, 0)
+            if ico:
+                try:
+                    ico = ico.load_icon()
+                except Exception:
+                    ico = default
+            else:
+                ico = default
+            self.icons.append(ico)'''
 
-content = '\n'.join(new_lines)
+# Usar regex DOTALL para pegar múltiplas linhas
+content = re.sub(old_configure_pattern, new_configure, content, flags=re.DOTALL)
 
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w") as f:
     f.write(content)
 
-print("nmwidgets.py patchado (get_state + configure_icons)")
+print("nmwidgets.py patchado (get_state + configure_icons robusto)")
 PYEOF
 else
     echo "[patch] AVISO: $NMWIDGETS não encontrado"
 fi
 
-# 5. Regenerar cache de ícones para todos os temas instalados
+# 4. Ícone do Ubiquity = anaconda.png 512px do Zorin
+echo "[patch] Definindo ícone do instalador (anaconda 512px)..."
+ANACONDA_ICON="/usr/share/icons/Zorin/512x512@2x/apps/anaconda.png"
+UBQUITY_ICON="/usr/share/pixmaps/ubiquity.png"
+UBQUITY_ICON_SVG="/usr/share/pixmaps/ubiquity.svg"
+
+if [ -f "$ANACONDA_ICON" ]; then
+    cp "$ANACONDA_ICON" "$UBQUITY_ICON"
+    # Também copiar como SVG se for SVG, senão converter referência
+    cp "$ANACONDA_ICON" /usr/share/pixmaps/mrezequielos-installer.png 2>/dev/null || true
+    echo "[patch] Ícone anaconda.png copiado para ubiquity.png"
+else
+    echo "[patch] AVISO: $ANACONDA_ICON não encontrado, procurando alternativas..."
+    # Procurar anaconda em outros tamanhos
+    for sz in 512x512@2x 512x512 256x256 128x128 64x64 48x48 32x32 24x24 22x22 16x16; do
+        if [ -f "/usr/share/icons/Zorin/${sz}/apps/anaconda.png" ]; then
+            cp "/usr/share/icons/Zorin/${sz}/apps/anaconda.png" "$UBQUITY_ICON"
+            cp "/usr/share/icons/Zorin/${sz}/apps/anaconda.png" /usr/share/pixmaps/mrezequielos-installer.png 2>/dev/null || true
+            echo "[patch] Ícone anaconda.png encontrado em ${sz}"
+            break
+        fi
+    done
+fi
+
+# Atualizar .desktop do ubiquity
+DESKTOP_FILE="/usr/share/applications/ubiquity.desktop"
+if [ -f "$DESKTOP_FILE" ]; then
+    sed -i 's|^Icon=.*|Icon=ubiquity|' "$DESKTOP_FILE"
+    echo "[patch] ubiquity.desktop atualizado"
+fi
+
+# 5. Regenerar cache de ícones para todos os temas
 echo "[patch] Regenerando cache de ícones..."
 for theme in /usr/share/icons/*/; do
     if [ -f "$theme/index.theme" ]; then
