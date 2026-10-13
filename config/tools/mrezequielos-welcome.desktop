@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MrEzequielOS Welcome
+Exec=mrezequielos-welcome
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=10
+OnlyShowIn=GNOME;

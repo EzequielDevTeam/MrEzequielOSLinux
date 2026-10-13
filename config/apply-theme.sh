@@ -125,6 +125,14 @@ cp "$BASE/tools/mrezequielos-update-notify.desktop" /etc/xdg/autostart/ 2>/dev/n
 cp "$BASE/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try-install
 chmod +x /usr/local/bin/mrezequielos-try-install
 cp "$BASE/tools/mrezequielos-try-install.desktop" /etc/xdg/autostart/ 2>/dev/null || true
+cp "$BASE/tools/mrezequielos-welcome" /usr/local/bin/mrezequielos-welcome
+chmod +x /usr/local/bin/mrezequielos-welcome
+cp "$BASE/tools/mrezequielos-welcome.desktop" /etc/xdg/autostart/ 2>/dev/null || true
+for d in /usr/share/applications/yelp.desktop; do
+  if [ -f "$d" ] && ! grep -q "^NoDisplay=true" "$d"; then
+    echo "NoDisplay=true" >> "$d"
+  fi
+done
 cp "$BASE/tools/mrezequielos-live-keyring" /usr/local/bin/mrezequielos-live-keyring
 chmod +x /usr/local/bin/mrezequielos-live-keyring
 cp "$BASE/tools/mrezequielos-live-keyring.desktop" /etc/xdg/autostart/ 2>/dev/null || true

@@ -85,11 +85,14 @@ rm -f /usr/local/bin/mrezequielos-test-installer /usr/share/applications/mrezequ
 chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
 mkdir -p /usr/share/help/C/mrezequielos-help
 cp "\$TOP/config/help/C/mrezequielos-help/"*.page /usr/share/help/C/mrezequielos-help/ 2>/dev/null || true
-cp "\$TOP/config/tools/mrezequielos-appearance-gtk.py" /usr/local/bin/mrezequielos-appearance-gtk
-cp "\$TOP/config/tools/mrezequielos-try-install" /usr/local/bin/mrezequielos-try-install 2>/dev/null || true
-cp "\$TOP/config/tools/mrezequielos-live-keyring" /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
-chmod +x /usr/local/bin/mrezequielos-appearance-gtk /usr/local/bin/mrezequielos-try-install /usr/local/bin/mrezequielos-live-keyring 2>/dev/null || true
-chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-welcome" /usr/local/bin/mrezequielos-welcome 2>/dev/null || true
+cp "\$TOP/config/tools/mrezequielos-welcome.desktop" /etc/xdg/autostart/ 2>/dev/null || true
+chmod +x /usr/local/bin/mrezequielos-welcome 2>/dev/null || true
+for d in /usr/share/applications/yelp.desktop; do
+  if [ -f "\$d" ] && ! grep -q "^NoDisplay=true" "\$d"; then
+    echo "NoDisplay=true" >> "\$d"
+  fi
+done
 cp "\$TOP/config/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true

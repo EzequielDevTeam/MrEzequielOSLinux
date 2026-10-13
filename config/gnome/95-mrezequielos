@@ -32,8 +32,10 @@ disable-user-extensions=false
 [org/gnome/shell/extensions/zorin-taskbar]
 panel-positions='{"0": "BOTTOM"}'
 panel-sizes='{"0": 48}'
+panel-lengths='{"0": 94}'
+panel-anchors='{"0": "MIDDLE"}'
 panel-element-positions='{"0": [{"element": "showAppsButton", "visible": false, "position": "stackedTL"}, {"element": "activitiesButton", "visible": false, "position": "stackedTL"}, {"element": "leftBox", "visible": true, "position": "stackedTL"}, {"element": "taskbar", "visible": true, "position": "centerMonitor"}, {"element": "centerBox", "visible": true, "position": "stackedBR"}, {"element": "rightBox", "visible": true, "position": "stackedBR"}, {"element": "dateMenu", "visible": true, "position": "stackedBR"}, {"element": "systemMenu", "visible": true, "position": "stackedBR"}, {"element": "desktopButton", "visible": false, "position": "stackedBR"}]}'
-global-border-radius=12
+global-border-radius=3
 highlight-appicon-hover-border-radius=12
 trans-use-custom-opacity=true
 trans-panel-opacity=0.75

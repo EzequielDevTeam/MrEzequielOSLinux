@@ -1,0 +1,23 @@
+#!/bin/bash
+# MrEzequielOS - boas-vindas no primeiro login (igual tour do Zorin).
+# Só no sistema INSTALADO (nunca no live) e só uma vez (carimbo).
+grep -q "boot=casper" /proc/cmdline 2>/dev/null && exit 0
+STAMP="$HOME/.config/mrezequielos-welcomed"
+[ -f "$STAMP" ] && exit 0
+command -v zenity >/dev/null || exit 0
+sleep 6
+ESCOLHA=$(zenity --list --title="Bem-vindo ao MrEzequielOS!" \
+  --text="Que bom te ver por aqui. Por onde começar?" \
+  --column="Ação" --column="Descrição" \
+  tour "Conhecer o sistema (abre a Ajuda)" \
+  visual "Deixar do meu jeito (Appearance)" \
+  usar "Só usar (não mostra de novo)" \
+  --width=520 --height=260 2>/dev/null) || exit 0
+mkdir -p "$(dirname "$STAMP")"
+touch "$STAMP"
+case "$ESCOLHA" in
+  tour) (yelp /usr/share/help/C/mrezequielos-help/index.page & sleep 1; touch "$STAMP") 2>/dev/null ;;
+  visual) (mrezequielos-appearance & sleep 1; rm -f "$STAMP") 2>/dev/null ;;
+  *) : ;;
+esac
+exit 0

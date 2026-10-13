@@ -194,6 +194,10 @@ class AppearanceApp(Adw.Application):
         self.win = None
 
     def do_activate(self):
+        try:
+            Gtk.Settings.get_default().props.gtk_decoration_layout = ':minimize,maximize,close'
+        except Exception:
+            pass
         if not self.win:
             self.win = AppearanceWindow(self)
         self.win.present()
