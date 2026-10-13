@@ -108,6 +108,15 @@ jobs:
           cp /tmp/mre-chroot.log ./mre-chroot.log
           [ $RC -eq 0 ] || exit $RC
 
+      - name: Validar nmwidgets.py (sem IndentationError)
+        run: |
+          sudo chroot chroot python3 -c "
+import sys
+sys.path.insert(0, '/usr/lib/ubiquity')
+from ubiquity.frontend.gtk_components import nmwidgets
+print('nmwidgets.py OK - sem erro de sintaxe')
+" 2>&1
+
       - name: Desmontar chroot
         if: always()
         run: |
