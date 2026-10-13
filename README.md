@@ -50,3 +50,4 @@ sudo apt install cubic
 # Abra o Cubic, escolha ubuntu-26.04-desktop-amd64.iso como base,
 # na aba terminal cole o conteúdo de packages.list
 ```
+# trigger
