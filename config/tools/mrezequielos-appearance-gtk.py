@@ -175,7 +175,7 @@ class AppearanceApp(Adw.Application):
 
 
 def toast_page(parent, title):
-    dlg = Adw.MessageDialog.new(parent, title, 'Aplicado. Saia e entre de novo para recarregar tudo.')
+    dlg = Adw.MessageDialog.new(parent, title, 'Aplicado. Reinicie o computador para valer tudo.')
     dlg.add_response('ok', 'OK')
     dlg.present()
 
@@ -244,12 +244,24 @@ class AppearanceWindow(Adw.ApplicationWindow):
         row.add_suffix(btn)
         group.add(row)
 
+    def thumb(self, group, key):
+        f = {'windows': '/usr/share/pixmaps/mrezequielos-layout-windows.svg',
+             'mac': '/usr/share/pixmaps/mrezequielos-layout-mac.svg',
+             'ubuntu': '/usr/share/pixmaps/mrezequielos-layout-ubuntu.svg'}.get(key, '')
+        if f and os.path.exists(f):
+            pic = Gtk.Picture.new_for_filename(f)
+            pic.set_size_request(300, 180)
+            group.add(pic)
+
     def page_layout(self):
         page, group = self.pref_page()
+        self.thumb(group, 'windows')
         self.apply_row(group, 'Windows', 'Barra embaixo + menu iniciar (padrão)',
                        lambda: apply_layout('windows'))
+        self.thumb(group, 'mac')
         self.apply_row(group, 'macOS', 'Barra em cima + dock embaixo',
                        lambda: apply_layout('mac'))
+        self.thumb(group, 'ubuntu')
         self.apply_row(group, 'Ubuntu', 'Barra lateral esquerda',
                        lambda: apply_layout('ubuntu'))
         return page

@@ -49,6 +49,8 @@ menu-button-icon='/usr/share/pixmaps/mrezequielos-start.svg'
 menu-button-icon-size=28
 menu-button-border-radius=(true, 22)
 show-activities-button=false
+menu-button-right-click-action='None'
+context-menu-items=[{'id': 'ArcMenu_PowerOptions', 'name': 'Power Options', 'icon': 'system-shutdown-symbolic'}, {'id': 'ArcMenu_Separator', 'name': 'Separator', 'icon': 'list-remove-symbolic'}, {'id': 'ArcMenu_ShowDesktop', 'name': 'Show Desktop', 'icon': 'computer-symbolic'}, {'id': 'ArcMenu_ActivitiesOverview', 'name': 'Activities Overview', 'icon': 'view-fullscreen-symbolic'}]
 pinned-apps=[[{'id': 'brave-browser.desktop'}], [{'id': 'org.gnome.Nautilus.desktop'}], [{'id': 'org.gnome.Terminal.desktop'}], [{'id': 'org.gnome.Software.desktop'}], [{'id': 'libreoffice-writer.desktop'}], [{'id': 'mrezequielos-help.desktop'}]]
 
 [org/gnome/shell/extensions/ding]

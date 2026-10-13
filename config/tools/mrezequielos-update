@@ -88,7 +88,13 @@ cp "\$TOP/config/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wal
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
 cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
+for l in windows mac ubuntu; do
+  cp "\$TOP/config/branding/layout-$l.svg" "/usr/share/pixmaps/mrezequielos-layout-$l.svg" 2>/dev/null || true
+done
 cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
+for l in windows mac ubuntu; do
+  cp "\$TOP/config/branding/layout-$l.svg" "/usr/share/pixmaps/mrezequielos-layout-$l.svg" 2>/dev/null || true
+done
 cp "\$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
 mkdir -p /usr/share/doc/mrezequielos
 cp "\$TOP/LICENSE" /usr/share/doc/mrezequielos/LICENSE 2>/dev/null || true
@@ -97,6 +103,28 @@ mkdir -p /etc/dconf/db/local.d /etc/dconf/db/gdm.d
 cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/local.d/95-mrezequielos
 cp "\$TOP/config/gnome/95-mrezequielos" /etc/dconf/db/gdm.d/95-mrezequielos
 dconf update || true
+echo "# Tema de boot nosso + boot direto (sem entradas fantasmas)..."
+mkdir -p /usr/share/plymouth/themes/mrezequielos
+cp "\$TOP/config/plymouth/mrezequielos/mrezequielos.plymouth" /usr/share/plymouth/themes/mrezequielos/ 2>/dev/null || true
+cp "\$TOP/config/branding/plymouth-watermark.png" /usr/share/plymouth/themes/mrezequielos/watermark.png 2>/dev/null || true
+SPIN="/usr/share/plymouth/themes/spinner"
+if [ -d "\$SPIN" ]; then
+  cp "\$SPIN"/animation-*.png "\$SPIN"/throbber-*.png /usr/share/plymouth/themes/mrezequielos/ 2>/dev/null || true
+  cp "\$SPIN"/entry.png "\$SPIN"/lock.png "\$SPIN"/bullet.png "\$SPIN"/keyboard.png "\$SPIN"/keymap-render.png "\$SPIN"/capslock.png /usr/share/plymouth/themes/mrezequielos/ 2>/dev/null || true
+fi
+update-alternatives --install /usr/share/plymouth/themes/default.plymouth default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth 100 2>/dev/null || true
+update-alternatives --set default.plymouth /usr/share/plymouth/themes/mrezequielos/mrezequielos.plymouth 2>/dev/null || true
+update-initramfs -u -k all 2>/dev/null || echo "# AVISO initramfs"
+if ! grep -q "^GRUB_DISABLE_OS_PROBER=true" /etc/default/grub 2>/dev/null; then
+  echo 'GRUB_DISABLE_OS_PROBER=true' >> /etc/default/grub
+fi
+sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=2/' /etc/default/grub 2>/dev/null || true
+if grep -q "^GRUB_TIMEOUT_STYLE=" /etc/default/grub 2>/dev/null; then
+  sed -i 's/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=hidden/' /etc/default/grub
+else
+  echo 'GRUB_TIMEOUT_STYLE=hidden' >> /etc/default/grub
+fi
+update-grub 2>/dev/null || echo "# AVISO grub"
 echo "# Instalando extensoes novas..."
 "\$TOP/config/gnome/install-extensions.sh" || true
 echo "# Instalando temas Zorin..."
@@ -183,7 +211,9 @@ EOFRELS
   fi
   if run_priv "$PICK"; then
     rm -f "$FLAG"
-    zenity --info --title="MrEzequielOS Update" --text="Versão <b>$PICK</b> aplicada. Saia e entre de novo (ou reinicie)." 2>/dev/null
+    if zenity --question --title="MrEzequielOS Update" --text="Versão <b>$PICK</b> aplicada." --ok-label="Reiniciar agora" --cancel-label="Depois" 2>/dev/null; then
+      systemctl reboot 2>/dev/null || sudo reboot 2>/dev/null || true
+    fi
   else
     zenity --error --title="MrEzequielOS Update" --text="Falhou. Detalhes em /var/log/mrezequielos-update.log (ou app Diagnóstico)." 2>/dev/null
   fi

@@ -32,6 +32,9 @@ cp "$BASE/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.
 cp "$BASE/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
 cp "$BASE/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/null || true
 cp "$BASE/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
+for l in windows mac ubuntu; do
+  cp "$BASE/branding/layout-$l.svg" "/usr/share/pixmaps/mrezequielos-layout-$l.svg" 2>/dev/null || true
+done
 
 echo "[visual] Extensões gerenciadas só pelo nosso Appearance (esconde apps soltos)..."
 for d in /usr/share/applications/com.mattjakeman.ExtensionManager.desktop /usr/share/applications/org.gnome.Extensions.desktop; do
