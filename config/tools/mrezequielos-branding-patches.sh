@@ -112,14 +112,11 @@ old_configure_pattern = r'    def configure_icons\(self\):.*?(?=\n    def |\ncla
 
 new_configure = '''    def configure_icons(self):
         it = Gtk.IconTheme()
-        default_theme = Gtk.IconTheme.get_default()
-        # Safe load with fallback - não crashar se ícone não existe
-        try:
-            default = default_theme.load_icon("image-missing", 22, 0)
-        except Exception:
-            from gi.repository import GdkPixbuf
-            default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)
-            default.fill(0x00000000)
+        # NÃO carregar "image-missing" do tema - cria pixbuf vazio em memória
+        # Evita sandbox bwrap + glycin-image-rs crash
+        from gi.repository import GdkPixbuf
+        default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)
+        default.fill(0x00000000)
         it.set_custom_theme('ubuntu-mono-light')
         self.icons = []
         for n in ['nm-signal-00',
