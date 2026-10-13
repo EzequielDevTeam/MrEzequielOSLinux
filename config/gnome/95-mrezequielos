@@ -22,7 +22,7 @@ lock-enabled=true
 
 [org/gnome/desktop/wm/preferences]
 theme='ZorinPurple-Dark'
-button-layout='close,minimize,maximize:'
+button-layout=':minimize,maximize,close'
 
 [org/gnome/shell]
 favorite-apps=['brave-browser.desktop', 'org.gnome.Nautilus.desktop', 'libreoffice-writer.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Software.desktop']

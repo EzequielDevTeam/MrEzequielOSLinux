@@ -84,6 +84,9 @@ jobs:
           echo "=== [7/7] limpeza ==="
           apt purge -y snapd* apport whoopsie || true
           if ! dpkg -s gnome-software >/dev/null 2>&1; then apt install -y --no-install-recommends gnome-software; fi
+          echo "=== [6a/7] remove ajuda Ubuntu (fica só a nossa) ==="
+          apt purge -y gnome-user-docs ubuntu-docs 2>/dev/null || true
+          for p in gnome-shell gdm3 gnome-session yelp; do dpkg -s $p >/dev/null 2>&1 || apt install -y $p; done
           echo "=== [6b/7] desliga snap/apport (mascara, sem brigar com dependencias) ==="
           systemctl mask snapd.service snapd.socket snapd.seeded.service apport.service 2>/dev/null || true
           systemctl --global mask snapd.service 2>/dev/null || true
