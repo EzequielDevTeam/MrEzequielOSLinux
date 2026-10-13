@@ -1,0 +1,58 @@
+name: release-iso
+# Publica a ISO no Release dividida em partes (<2GB cada, limite do GitHub).
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag do release (ex: v2.0)'
+        required: true
+        default: 'v2.0'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Baixar ISO do último build ok
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RID=$(gh run list --workflow=build-iso --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          echo "build=$RID"
+          [ -n "$RID" ] && [ "$RID" != "null" ] || { echo "sem build ok"; exit 1; }
+          mkdir -p iso
+          gh run download "$RID" -D iso/
+          ls -lh iso/
+          ISO=$(ls iso/*.iso | head -1)
+          echo "ISO=$ISO" | tee /tmp/iso.env
+
+      - name: Dividir + checksum + instruções
+        run: |
+          ISO=$(ls iso/*.iso | head -1)
+          BASE=$(basename "$ISO" .iso)
+          split -b 1900M -d "$ISO" "out/${BASE}.part-"
+          ls -lh out/
+          ( cd out && sha256sum "${BASE}.part-"* > SHA256SUMS.txt && cat SHA256SUMS.txt )
+          cat > out/COMO-JUNTAR.txt <<'EOF'
+          MrEzequielOS - como juntar as partes e gravar
+          =================================================
+          Linux/macOS, no terminal na pasta dos arquivos:
+            cat MrEzequielOS-*.part-* > MrEzequielOS.iso
+            sha256sum -c SHA256SUMS.txt
+          Windows (cmd, na pasta):
+            copy /b MrEzequielOS-*.part-* MrEzequielOS.iso
+          Depois grave com BalenaEtcher, Ventoy ou Rufus (modo DD),
+          com Secure Boot desligado.
+          EOF
+
+      - name: Enviar ao release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ inputs.tag }}" out/* --clobber
+          gh release view "${{ inputs.tag }}" --json assets --jq '.assets[] | "\(.name) \(.size)"'
