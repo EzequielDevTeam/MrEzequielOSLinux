@@ -9,13 +9,8 @@ echo "[patch] Aplicando patches de branding..."
 # 1. Patch update-manager utils.py - retorna MrEzequielOS em vez de Ubuntu
 UTILS_PY="/usr/lib/python3/dist-packages/UpdateManager/Core/utils.py"
 if [ -f "$UTILS_PY" ]; then
-    # Backup
     cp "$UTILS_PY" "$UTILS_PY.bak"
-    
-    # Usar Python para fazer a substituição de forma robusta
     python3 << 'PYEOF'
-import re
-
 with open("/usr/lib/python3/dist-packages/UpdateManager/Core/utils.py", "r") as f:
     content = f.read()
 
@@ -59,7 +54,6 @@ with open("/usr/lib/python3/dist-packages/UpdateManager/Core/utils.py", "w") as 
 
 print("update-manager utils.py patchado")
 PYEOF
-
 else
     echo "[patch] AVISO: $UTILS_PY não encontrado"
 fi
@@ -68,7 +62,6 @@ fi
 UBI_WIRELESS="/usr/lib/ubiquity/plugins/ubi-wireless.py"
 if [ -f "$UBI_WIRELESS" ]; then
     cp "$UBI_WIRELESS" "$UBI_WIRELESS.bak"
-    
     python3 << 'PYEOF'
 with open("/usr/lib/ubiquity/plugins/ubi-wireless.py", "r") as f:
     content = f.read()
@@ -87,7 +80,6 @@ with open("/usr/lib/ubiquity/plugins/ubi-wireless.py", "w") as f:
 
 print("ubiquity ubi-wireless.py patchado")
 PYEOF
-
 else
     echo "[patch] AVISO: $UBI_WIRELESS não encontrado"
 fi
@@ -96,7 +88,6 @@ fi
 NMWIDGETS="/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py"
 if [ -f "$NMWIDGETS" ]; then
     cp "$NMWIDGETS" "$NMWIDGETS.bak"
-    
     python3 << 'PYEOF'
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "r") as f:
     content = f.read()
@@ -111,90 +102,50 @@ new = """    def get_state(self):
 
 content = content.replace(old, new)
 
+# 4. Patch configure_icons - EXATO do Ubuntu 26.04 (extraído do .deb)
+# Procurar e substituir a linha problemática específica
+lines = content.split('\n')
+new_lines = []
+i = 0
+while i < len(lines):
+    line = lines[i]
+    # Linha exata que crasha: default = default.load_icon("image-missing", 22, 0)
+    if 'default = default.load_icon("image-missing", 22, 0)' in line:
+        # Substituir essa linha e adicionar fallback
+        indent = line[:len(line) - len(line.lstrip())]
+        new_lines.append(indent + 'try:')
+        new_lines.append(indent + '    default = default_theme.load_icon("image-missing", 22, 0)')
+        new_lines.append(indent + 'except Exception:')
+        new_lines.append(indent + '    from gi.repository import GdkPixbuf')
+        new_lines.append(indent + '    default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)')
+        new_lines.append(indent + '    default.fill(0x00000000)')
+        # Também precisa mudar a linha anterior: default = Gtk.IconTheme.get_default()
+        # para: default_theme = Gtk.IconTheme.get_default()
+        # Vamos achar e corrigir a linha anterior
+        if new_lines and 'default = Gtk.IconTheme.get_default()' in new_lines[-1]:
+            new_lines[-1] = indent + 'default_theme = Gtk.IconTheme.get_default()'
+    else:
+        new_lines.append(line)
+    i += 1
+
+content = '\n'.join(new_lines)
+
+# Também proteger ico.load_icon() dentro do loop
+content = content.replace(
+    'ico = ico.load_icon()',
+    '''try:
+                ico = ico.load_icon()
+            except Exception:
+                ico = default'''
+)
+
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w") as f:
     f.write(content)
 
-print("nmwidgets.py patchado")
+print("nmwidgets.py patchado (get_state + configure_icons)")
 PYEOF
-
 else
     echo "[patch] AVISO: $NMWIDGETS não encontrado"
-fi
-
-# 4. Patch nmwidgets.py - configure_icons não crashar se ícone não existe
-NMWIDGETS="/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py"
-if [ -f "$NMWIDGETS" ]; then
-    cp "$NMWIDGETS" "$NMWIDGETS.bak"
-    python3 << 'PYEOF'
-with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "r") as f:
-    content = f.read()
-
-# Patch configure_icons para não falhar se load_icon falhar
-old_configure = '''    def configure_icons(self):
-        it = Gtk.IconTheme()
-        default = Gtk.IconTheme.get_default()
-        default = default.load_icon("image-missing", 22, 0)
-        it.set_custom_theme('ubuntu-mono-light')
-        self.icons = []
-        for n in ['nm-signal-00',
-                  'nm-signal-25',
-                  'nm-signal-50',
-                  'nm-signal-75',
-                  'nm-signal-100',
-                  'nm-signal-00-secure',
-                  'nm-signal-25-secure',
-                  'nm-signal-50-secure',
-                  'nm-signal-75-secure',
-                  'nm-signal-100-secure']:
-            ico = it.lookup_icon(n, 22, 0)
-            if ico:
-                ico = ico.load_icon()
-            else:
-                ico = default
-            self.icons.append(ico)'''
-
-new_configure = '''    def configure_icons(self):
-        it = Gtk.IconTheme()
-        default_theme = Gtk.IconTheme.get_default()
-        # Safe load with fallback
-        try:
-            default = default_theme.load_icon("image-missing", 22, 0)
-        except Exception:
-            # Create a blank pixbuf as fallback
-            from gi.repository import GdkPixbuf
-            default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)
-            default.fill(0x00000000)
-        it.set_custom_theme('ubuntu-mono-light')
-        self.icons = []
-        for n in ['nm-signal-00',
-                  'nm-signal-25',
-                  'nm-signal-50',
-                  'nm-signal-75',
-                  'nm-signal-100',
-                  'nm-signal-00-secure',
-                  'nm-signal-25-secure',
-                  'nm-signal-50-secure',
-                  'nm-signal-75-secure',
-                  'nm-signal-100-secure']:
-            ico = it.lookup_icon(n, 22, 0)
-            if ico:
-                try:
-                    ico = ico.load_icon()
-                except Exception:
-                    ico = default
-            else:
-                ico = default
-            self.icons.append(ico)'''
-
-content = content.replace(old_configure, new_configure)
-
-with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w") as f:
-    f.write(content)
-
-print("nmwidgets.py configure_icons patchado (código real)")
-PYEOF
-else
-    echo "[patch] AVISO: $NMWIDGETS não encontrado (patch 4)"
 fi
 
 # 5. Regenerar cache de ícones para todos os temas instalados
