@@ -227,19 +227,24 @@ for theme in /usr/share/icons/*/; do
 done
 
 # 6. Resolver symlinks do image-missing.png no tema Zorin (evita bwrap crash)
-echo "[patch] Resolvendo symlinks do image-missing.png no Zorin..."
+echo "[patch] Criando image-missing.png transparente nos tamanhos necessários (evita bwrap crash)..."
 for sz in 16x16 22x22 24x24 32x32 48x48; do
-    ICON="/usr/share/icons/Zorin/${sz}/status/image-missing.png"
-    if [ -L "$ICON" ]; then
-        REAL="$(readlink -f "$ICON")"
-        if [ -f "$REAL" ]; then
-            cp "$REAL" "$ICON.tmp" && mv "$ICON.tmp" "$ICON"
-            echo "[patch] Resolvido symlink: $ICON -> arquivo real"
-        fi
+    DIR="/usr/share/icons/Zorin/${sz}/status"
+    ICON="${DIR}/image-missing.png"
+    mkdir -p "$DIR"
+    # Criar PNG transparente 1x1 pixel se não existir
+    if [ ! -f "$ICON" ]; then
+        python3 -c "
+from gi.repository import GdkPixbuf
+pb = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, ${sz%x*}, ${sz#*x})
+pb.fill(0x00000000)
+pb.savev('${ICON}', 'png', [], [])
+print('[patch] Criado: ${ICON}')
+"
     fi
 done
 
-# 7. Regenerar cache após resolver symlinks
+# 7. Regenerar cache após criar ícones
 for theme in /usr/share/icons/*/; do
     if [ -f "$theme/index.theme" ]; then
         gtk-update-icon-cache -f "$theme" 2>/dev/null || true
