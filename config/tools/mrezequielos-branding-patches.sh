@@ -84,11 +84,15 @@ else
     echo "[patch] AVISO: $UBI_WIRELESS não encontrado"
 fi
 
-# 3. Patch nmwidgets.py - get_state mais defensivo + configure_icons robusto
+# 3. Patch nmwidgets.py - get_state defensivo + configure_icons SEM load_icon("image-missing")
 NMWIDGETS="/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py"
 if [ -f "$NMWIDGETS" ]; then
     cp "$NMWIDGETS" "$NMWIDGETS.bak"
-    python3 << 'PYEOF'
+    
+    # Escrever script Python em arquivo temporário para evitar problemas de escaping
+    cat > /tmp/patch_nmwidgets.py << 'PYEOF'
+import re
+
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "r") as f:
     content = f.read()
 
@@ -103,9 +107,7 @@ new_get_state = """    def get_state(self):
 
 content = content.replace(old_get_state, new_get_state)
 
-# 3b. SUBSTITUIR configure_icons INTEIRO por versão robusta
-import re
-
+# 3b. SUBSTITUIR configure_icons INTEIRO por versão robusta (SEM load_icon image-missing)
 new_configure = '''    def configure_icons(self):
         it = Gtk.IconTheme()
         # NÃO carregar "image-missing" do tema - cria pixbuf vazio em memória
@@ -145,25 +147,19 @@ if count == 0:
     lines = content.split('\n')
     new_lines = []
     in_configure = False
-    brace_count = 0
     for line in lines:
         stripped = line.lstrip()
         if stripped.startswith('def configure_icons'):
             in_configure = True
-            brace_count = 0
             new_lines.append(new_configure)
             continue
         if in_configure:
-            # Contar indentação para saber quando o método acaba
-            if stripped and not stripped.startswith('#'):
-                # Próximo método ou classe
-                if stripped.startswith('def ') or stripped.startswith('class '):
-                    in_configure = False
-                    new_lines.append(line)
-                # Skip linhas do método antigo
-                continue
-            else:
-                continue
+            # Próximo método ou classe
+            if stripped.startswith('def ') or stripped.startswith('class '):
+                in_configure = False
+                new_lines.append(line)
+            # Skip linhas do método antigo
+            continue
         else:
             new_lines.append(line)
     content = '\n'.join(new_lines)
@@ -172,11 +168,11 @@ else:
     print("[patch] Regex substituiu configure_icons (count={})".format(count))
 
 # VERIFICAÇÃO: confirmar que não tem mais load_icon("image-missing")
-if 'load_icon("image-missing")' in content or \"load_icon('image-missing')\" in content:
+if 'load_icon("image-missing")' in content or "load_icon('image-missing')" in content:
     print("[patch] AVISO: load_icon('image-missing') AINDA PRESENTE no código!")
     # Force replace qualquer ocorrência restante
     content = content.replace('default_theme.load_icon("image-missing", 22, 0)', '# REMOVIDO: load_icon image-missing')
-    content = content.replace("default.load_icon('image-missing', 22, 0)", "# REMOVIDO: load_icon image-missing")
+    content = content.replace("default.load_icon('image-missing', 22, 0)", '# REMOVIDO: load_icon image-missing')
     content = content.replace('default.load_icon("image-missing", 22, 0)', '# REMOVIDO: load_icon image-missing')
     print("[patch] Forçado remoção de load_icon image-missing")
 else:
@@ -187,6 +183,9 @@ with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w"
 
 print("nmwidgets.py patchado (get_state + configure_icons robusto + verificação)")
 PYEOF
+
+    python3 /tmp/patch_nmwidgets.py
+    rm /tmp/patch_nmwidgets.py
 else
     echo "[patch] AVISO: $NMWIDGETS não encontrado"
 fi
@@ -195,16 +194,13 @@ fi
 echo "[patch] Definindo ícone do instalador (anaconda 512px)..."
 ANACONDA_ICON="/usr/share/icons/Zorin/512x512@2x/apps/anaconda.png"
 UBQUITY_ICON="/usr/share/pixmaps/ubiquity.png"
-UBQUITY_ICON_SVG="/usr/share/pixmaps/ubiquity.svg"
 
 if [ -f "$ANACONDA_ICON" ]; then
     cp "$ANACONDA_ICON" "$UBQUITY_ICON"
-    # Também copiar como SVG se for SVG, senão converter referência
     cp "$ANACONDA_ICON" /usr/share/pixmaps/mrezequielos-installer.png 2>/dev/null || true
     echo "[patch] Ícone anaconda.png copiado para ubiquity.png"
 else
     echo "[patch] AVISO: $ANACONDA_ICON não encontrado, procurando alternativas..."
-    # Procurar anaconda em outros tamanhos
     for sz in 512x512@2x 512x512 256x256 128x128 64x64 48x48 32x32 24x24 22x22 16x16; do
         if [ -f "/usr/share/icons/Zorin/${sz}/apps/anaconda.png" ]; then
             cp "/usr/share/icons/Zorin/${sz}/apps/anaconda.png" "$UBQUITY_ICON"
