@@ -122,6 +122,9 @@ PYEOF
 }
 
 for uuid in $UUIDS; do
+  case "$uuid" in
+    zorin-connect*) echo "[ext] git direto (sem EGO): $uuid"; git_zorinconnect && echo "[ext] OK(git): $uuid" || echo "[ext] FALHOU: $uuid"; continue ;;
+  esac
   if install_ego "$uuid"; then
     echo "[ext] OK(EGO): $uuid"
     continue

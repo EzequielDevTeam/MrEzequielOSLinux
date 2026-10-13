@@ -28,18 +28,26 @@ jobs:
         run: |
           python3 - <<'EOF'
           import zipfile, json, glob, sys
-          ok = True
+          req = {l.strip() for l in open('config/required-extensions.txt') if l.strip() and not l.strip().startswith('#')}
+          seen, bad = set(), []
           for d in glob.glob('/usr/share/gnome-shell/extensions/*/'):
               try:
                   m = json.load(open(d + 'metadata.json'))
               except Exception as e:
-                  print('SEM metadata:', d, e); ok = False; continue
+                  print('SEM metadata:', d, e); continue
+              uuid = m.get('uuid')
+              if uuid not in req:
+                  continue
+              seen.add(uuid)
               svm = m.get('shell-version-map') or {}
               sv = m.get('shell-version') or []
               has50 = ('50' in [str(x) for x in svm.keys()]) or ('50' in [str(x) for x in sv])
-              print(('OK  ' if has50 else 'RUIM'), m.get('uuid'), 'v' + str(m.get('version')), '| map:', sorted(svm.keys(), key=str) if svm else sv)
-              if not has50 and 'schneegans' not in d and 'jderose' not in d and 'arcmenu' not in d and 'aunetx' not in d and 'rastersoft' not in d and 'rgcjonas' not in d:
-                  pass
+              print(('OK  ' if has50 else 'RUIM'), uuid, 'v' + str(m.get('version')), '| map:', sorted(svm.keys(), key=str) if svm else sv)
+              if not has50:
+                  bad.append(uuid)
+          missing = req - seen
+          assert not missing, 'extensoes nossas nao instaladas: %s' % missing
+          assert not bad, 'extensoes incompativeis com shell 50: %s' % bad
           sys.exit(0)
           EOF
 
@@ -56,14 +64,14 @@ jobs:
               sleep 2
             done
             echo "=== shell no ar, ligando extensoes ==="
-            for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
+            for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com zorin-connect@zorinos.com; do
               gnome-extensions enable "$u" 2>&1 || true
             done
             sleep 12
             echo "=== LIGADAS ==="
             gnome-extensions list --enabled 2>&1
             echo "=== ESTADO DE CADA UMA ==="
-            for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com; do
+            for u in zorin-taskbar@zorinos.com arcmenu@arcmenu.com blur-my-shell@aunetx ding@rastersoft.com appindicatorsupport@rgcjonas.gmail.com burn-my-windows@schneegans.github.com desktop-cube@schneegans.github.com dash-to-dock@micxgx.gmail.com zorin-connect@zorinos.com; do
               echo "[$u]"
               gnome-extensions show "$u" 2>&1 | grep -a -E "State|Error" | head -4
             done
