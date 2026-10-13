@@ -56,3 +56,24 @@ jobs:
         run: |
           gh release upload "${{ inputs.tag }}" out/* --clobber
           gh release view "${{ inputs.tag }}" --json assets --jq '.assets[] | "\(.name) \(.size)"'
+
+      - name: Enviar ISO inteira ao Internet Archive
+        env:
+          IA_ACCESS: ${{ secrets.IA_ACCESS }}
+          IA_SECRET: ${{ secrets.IA_SECRET }}
+        run: |
+          ISO=$(ls iso/*.iso | head -1)
+          BASE=$(basename "$ISO" .iso | tr '[:upper:]' '[:lower:]' | tr '.' '-')
+          pip install -q internetarchive
+          mkdir -p ~/.config/internetarchive
+          printf '[s3]\naccess = %s\nsecret = %s\n' "$IA_ACCESS" "$IA_SECRET" > ~/.config/internetarchive/ia.ini
+          chmod 600 ~/.config/internetarchive/ia.ini
+          ( cd iso && sha256sum "$(basename "$ISO")" > ../out/SHA256SUMS-iso.txt )
+          ia upload "$BASE" "$ISO" "out/SHA256SUMS-iso.txt" \
+            --metadata="collection:opensource" \
+            --metadata="mediatype:software" \
+            --metadata="title:MrEzequielOS ${{ inputs.tag }}" \
+            --metadata="description:MrEzequielOS Linux - Ubuntu based, Zorin-style desktop. Codigo GPLv3." \
+            --metadata="licenseurl:https://www.gnu.org/licenses/gpl-3.0-standalone.html" \
+            --retries 10
+          echo "https://archive.org/download/$BASE/"
