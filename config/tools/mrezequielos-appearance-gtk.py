@@ -54,8 +54,31 @@ DTB_POSITIONS = ('{"0":[{"element":"showAppsButton","visible":false,"position":"
 
 def gs(schema, path=None):
     if path:
-        return Gio.Settings.new_with_path(schema, path)
-    return Gio.Settings(schema)
+        return Gio.Settings.new_with_path(schema_id=schema, path=path)
+    return Gio.Settings.new(schema_id=schema)
+
+
+def sset(settings, key, kind, value):
+    try:
+        if key not in settings.list_keys():
+            return False
+        getattr(settings, 'set_' + kind)(key, value)
+        return True
+    except Exception:
+        return False
+
+
+def sget(settings, key, default=''):
+    try:
+        if key not in settings.list_keys():
+            return default
+        return settings.get_string(key)
+    except Exception:
+        return default
+
+
+def bg():
+    return gs('org.gnome.desktop.background')
 
 
 def schema_ok(schema):
@@ -132,9 +155,10 @@ def apply_layout(name):
                           'ubuntu-dock@ubuntu.com'])
         shell().set_strv('favorite-apps', FAVS)
     else:
-        iface().set_string('gtk-theme', 'Yaru-dark')
+        gtk = 'ZorinPurple-Dark' if os.path.isdir('/usr/share/themes/ZorinPurple-Dark') else 'Yaru-dark'
+        iface().set_string('gtk-theme', gtk)
         iface().set_string('color-scheme', 'prefer-dark')
-        iface().set_string('accent-color', 'purple')
+        sset(iface(), 'accent-color', 'string', 'purple')
         shell().set_strv('favorite-apps', FAVS)
         shell().set_strv('enabled-extensions', CORE_EXTS + ['blur-my-shell@aunetx',
                                                              'ding@rastersoft.com'])
@@ -390,11 +414,7 @@ class AppearanceWindow(Adw.ApplicationWindow):
             pass
         if os.path.exists(WALLPAPER):
             cands = [WALLPAPER] + [c for c in cands if c != WALLPAPER]
-        cur = ''
-        try:
-            cur = iface().get_string('picture-uri-dark').replace('file://', '')
-        except Exception:
-            pass
+        cur = sget(bg(), 'picture-uri', '').replace('file://', '')
         opts = [os.path.basename(c) for c in cands[:20]] or ['(nenhum)']
         row = Adw.ComboRow.new()
         row.set_title('Papel de parede')
@@ -408,8 +428,7 @@ class AppearanceWindow(Adw.ApplicationWindow):
         def apply(idx):
             if 0 <= idx < len(cands[:20]):
                 uri = 'file://' + cands[:20][idx]
-                iface().set_string('picture-uri', uri)
-                iface().set_string('picture-uri-dark', uri)
+                sset(bg(), 'picture-uri', 'string', uri)
                 toast_page(self, 'Fundo')
 
         row.connect('notify::selected-item',
@@ -433,11 +452,7 @@ class AppearanceWindow(Adw.ApplicationWindow):
         acc = [('Roxo (padrão)', 'purple'), ('Laranja', 'orange'),
                ('Azul', 'blue'), ('Verde', 'green'), ('Vermelho', 'red')]
         names = [a[0] for a in acc]
-        cur = ''
-        try:
-            cur = iface().get_string('accent-color')
-        except Exception:
-            pass
+        cur = sget(iface(), 'accent-color', 'purple')
         sel = next((i for i, a in enumerate(acc) if a[1] == cur), 0)
         row = Adw.ComboRow.new()
         row.set_title('Cor de destaque')
@@ -445,8 +460,8 @@ class AppearanceWindow(Adw.ApplicationWindow):
         row.set_model(Gtk.StringList.new(names))
         row.set_selected(sel)
         row.connect('notify::selected-item',
-                    lambda r, p: iface().set_string('accent-color',
-                                                    acc[r.get_selected()][1]))
+                    lambda r, p: sset(iface(), 'accent-color', 'string',
+                                      acc[r.get_selected()][1]))
         group.add(row)
         return page
 
