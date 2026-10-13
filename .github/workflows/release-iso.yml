@@ -33,7 +33,9 @@ jobs:
 
       - name: Dividir + checksum + instruções
         run: |
-          ISO=$(ls iso/*.iso | head -1)
+          find iso -type f | head -20
+          ISO=$(find iso -name "*.iso" | head -1)
+          [ -n "$ISO" ] || { echo "FALHOU: nenhuma ISO baixada"; exit 1; }
           BASE=$(basename "$ISO" .iso)
           split -b 1900M -d "$ISO" "out/${BASE}.part-"
           ls -lh out/

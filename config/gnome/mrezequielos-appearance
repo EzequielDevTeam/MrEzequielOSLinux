@@ -40,8 +40,6 @@ apply_windows() {
   gsettings set org.gnome.shell disable-user-extensions false || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-positions "'{\"0\":\"BOTTOM\"}'" || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-sizes "'{\"0\":48}'" || true
-  dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-lengths "'{\"0\":94}'" || true
-  dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-anchors "'{\"0\":\"MIDDLE\"}'" || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/panel-element-positions "'{\"0\":[{\"element\":\"showAppsButton\",\"visible\":false,\"position\":\"stackedTL\"},{\"element\":\"activitiesButton\",\"visible\":false,\"position\":\"stackedTL\"},{\"element\":\"leftBox\",\"visible\":true,\"position\":\"stackedTL\"},{\"element\":\"taskbar\",\"visible\":true,\"position\":\"centerMonitor\"},{\"element\":\"centerBox\",\"visible\":true,\"position\":\"stackedBR\"},{\"element\":\"rightBox\",\"visible\":true,\"position\":\"stackedBR\"},{\"element\":\"dateMenu\",\"visible\":true,\"position\":\"stackedBR\"},{\"element\":\"systemMenu\",\"visible\":true,\"position\":\"stackedBR\"},{\"element\":\"desktopButton\",\"visible\":false,\"position\":\"stackedBR\"}]}'" || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/global-border-radius 3 || true
   dconf write /org/gnome/shell/extensions/zorin-taskbar/highlight-appicon-hover-border-radius 12 || true
