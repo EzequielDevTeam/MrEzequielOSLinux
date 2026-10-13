@@ -1,7 +1,7 @@
-PRETTY_NAME="MrEzequielOS 1.1.2"
+PRETTY_NAME="MrEzequielOS 1.1.3"
 NAME="MrEzequielOS"
-VERSION_ID="1.1.2"
-VERSION="1.1.2 (Noble)"
+VERSION_ID="1.1.3"
+VERSION="1.1.3 (Noble)"
 VERSION_CODENAME=noble
 ID=mrezequielos
 ID_LIKE=ubuntu

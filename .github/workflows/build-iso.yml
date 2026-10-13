@@ -153,24 +153,24 @@ jobs:
           EOF
           sudo tee iso/boot/grub/loopback.cfg > /dev/null <<'EOF'
           menuentry "MrEzequielOS Live" {
-              set isofile="/boot/iso/MrEzequielOS-1.1.2-amd64.iso"
+              set isofile="/boot/iso/MrEzequielOS-1.1.3-amd64.iso"
               loopback loop $isofile
               linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=$isofile quiet splash ---
               initrd (loop)/casper/initrd
           }
           EOF
-          echo 'MrEzequielOS 1.1.2 LTS "Noble" - Release amd64' | sudo tee iso/.disk/info > /dev/null
+          echo 'MrEzequielOS 1.1.3 LTS "Noble" - Release amd64' | sudo tee iso/.disk/info > /dev/null
           sudo cp config/branding/grub-bg.png iso/boot/grub/splash.png
           echo "=== squashfs (zstd) ==="
           sudo mksquashfs chroot iso/casper/filesystem.squashfs -comp zstd -b 1M -noappend
           echo "=== ISO (BIOS+UEFI) ==="
-          sudo grub-mkrescue --output=out/MrEzequielOS-1.1.2-amd64.iso iso/ -- -volid "MrEzequielOS 1.1.2"
+          sudo grub-mkrescue --output=out/MrEzequielOS-1.1.3-amd64.iso iso/ -- -volid "MrEzequielOS 1.1.3"
           ls -lh out/
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4
         with:
-          name: MrEzequielOS-1.1.2-amd64
+          name: MrEzequielOS-1.1.3-amd64
           path: out/*.iso
 
       - name: Upload log (se falhar)
