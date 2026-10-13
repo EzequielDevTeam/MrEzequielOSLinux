@@ -130,14 +130,21 @@ while i < len(lines):
 
 content = '\n'.join(new_lines)
 
-# Também proteger ico.load_icon() dentro do loop
-content = content.replace(
-    'ico = ico.load_icon()',
-    '''try:
-                ico = ico.load_icon()
-            except Exception:
-                ico = default'''
-)
+# 4b. Também proteger ico.load_icon() dentro do loop - line by line
+lines = content.split('\n')
+new_lines = []
+for line in lines:
+    stripped = line.lstrip()
+    if stripped == 'ico = ico.load_icon()':
+        indent = line[:len(line) - len(stripped)]
+        new_lines.append(indent + 'try:')
+        new_lines.append(indent + '    ico = ico.load_icon()')
+        new_lines.append(indent + 'except Exception:')
+        new_lines.append(indent + '    ico = default')
+    else:
+        new_lines.append(line)
+
+content = '\n'.join(new_lines)
 
 with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_components/nmwidgets.py", "w") as f:
     f.write(content)
