@@ -46,6 +46,16 @@ done
 echo "[visual] Temas OFICIAIS Zorin (com créditos)..."
 chmod +x "$BASE/gnome/install-zorin-themes.sh" 2>/dev/null || true
 "$BASE/gnome/install-zorin-themes.sh" || echo "AVISO temas zorin falharam, seguindo com Yaru/Papirus"
+echo "[visual] Icone nosso no atualizador (por cima do tema)..."
+for t in ZorinPurple-Dark ZorinGrey-Dark Zorin Yaru-dark Papirus-Dark; do
+  if [ -d "/usr/share/icons/$t" ]; then
+    mkdir -p "/usr/share/icons/$t/scalable/apps"
+    cp "$BASE/branding/logo.svg" "/usr/share/icons/$t/scalable/apps/system-software-update.svg" 2>/dev/null || true
+    cp "$BASE/branding/logo.svg" "/usr/share/icons/$t/scalable/apps/software-update-available.svg" 2>/dev/null || true
+  fi
+done
+gtk-update-icon-cache -f /usr/share/icons/ZorinPurple-Dark 2>/dev/null || true
+gtk-update-icon-cache -f /usr/share/icons/Papirus-Dark 2>/dev/null || true
 
 echo "[visual] Extensões estilo Zorin..."
 chmod +x "$BASE/gnome/install-extensions.sh" "$BASE/gnome/mrezequielos-appearance" 2>/dev/null || true

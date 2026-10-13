@@ -138,6 +138,16 @@ echo "# Instalando extensoes novas..."
 "\$TOP/config/gnome/install-extensions.sh" || true
 echo "# Instalando temas Zorin..."
 "\$TOP/config/gnome/install-zorin-themes.sh" || true
+echo "# Icone nosso no atualizador..."
+for t in ZorinPurple-Dark ZorinGrey-Dark Zorin Yaru-dark Papirus-Dark; do
+  if [ -d "/usr/share/icons/\$t" ]; then
+    mkdir -p "/usr/share/icons/\$t/scalable/apps"
+    cp "\$TOP/config/branding/logo.svg" "/usr/share/icons/\$t/scalable/apps/system-software-update.svg" 2>/dev/null || true
+    cp "\$TOP/config/branding/logo.svg" "/usr/share/icons/\$t/scalable/apps/software-update-available.svg" 2>/dev/null || true
+  fi
+done
+gtk-update-icon-cache -f /usr/share/icons/ZorinPurple-Dark 2>/dev/null || true
+gtk-update-icon-cache -f /usr/share/icons/Papirus-Dark 2>/dev/null || true
 echo "# Verificando o novo..."
 THEME_OK=1
 for d in /usr/share/themes/ZorinPurple-Dark /usr/share/icons/ZorinPurple-Dark; do
