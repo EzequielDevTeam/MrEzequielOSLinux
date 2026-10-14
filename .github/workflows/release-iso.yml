@@ -27,8 +27,9 @@ jobs:
           [ -n "$RID" ] && [ "$RID" != "null" ] || { echo "sem build ok"; exit 1; }
           mkdir -p iso
           gh run download "$RID" -D iso/
-          ls -lh iso/
-          ISO=$(ls iso/*.iso | head -1)
+          find iso -type f | head -20
+          ISO=$(find iso -name "*.iso" | head -1)
+          [ -n "$ISO" ] || { echo "FALHOU: nenhuma ISO baixada"; exit 1; }
           echo "ISO=$ISO" | tee /tmp/iso.env
 
       - name: Dividir + checksum + instruções
@@ -37,6 +38,7 @@ jobs:
           ISO=$(find iso -name "*.iso" | head -1)
           [ -n "$ISO" ] || { echo "FALHOU: nenhuma ISO baixada"; exit 1; }
           BASE=$(basename "$ISO" .iso)
+          mkdir -p out
           split -b 1900M -d "$ISO" "out/${BASE}.part-"
           ls -lh out/
           ( cd out && sha256sum "${BASE}.part-"* > SHA256SUMS.txt && cat SHA256SUMS.txt )
@@ -64,13 +66,15 @@ jobs:
           IA_ACCESS: ${{ secrets.IA_ACCESS }}
           IA_SECRET: ${{ secrets.IA_SECRET }}
         run: |
-          ISO=$(ls iso/*.iso | head -1)
+          ISO=$(find iso -name "*.iso" | head -1)
+          [ -n "$ISO" ] || { echo "FALHOU: nenhuma ISO baixada"; exit 1; }
           BASE=$(basename "$ISO" .iso | tr '[:upper:]' '[:lower:]' | tr '.' '-')
           pip install -q internetarchive
           mkdir -p ~/.config/internetarchive
           printf '[s3]\naccess = %s\nsecret = %s\n' "$IA_ACCESS" "$IA_SECRET" > ~/.config/internetarchive/ia.ini
           chmod 600 ~/.config/internetarchive/ia.ini
-          ( cd iso && sha256sum "$(basename "$ISO")" > ../out/SHA256SUMS-iso.txt )
+          sha256sum "$ISO" | sed "s| .*|  $(basename "$ISO")|" > out/SHA256SUMS-iso.txt
+          cat out/SHA256SUMS-iso.txt
           ia upload "$BASE" "$ISO" "out/SHA256SUMS-iso.txt" \
             --metadata="collection:opensource" \
             --metadata="mediatype:software" \

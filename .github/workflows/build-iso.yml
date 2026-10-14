@@ -121,6 +121,8 @@ jobs:
       - name: Gerar squashfs + ISO
         run: |
           set -e
+          BUILD_ID="${{ github.run_id }}"
+          echo "Build: $BUILD_ID"
           mkdir -p iso/casper iso/boot/grub iso/EFI/BOOT iso/.disk iso/install out
           echo "=== manifest ==="
           sudo chroot chroot dpkg-query -W --showformat='${Package} ${Version}\n' | sudo tee iso/casper/filesystem.manifest > /dev/null
@@ -129,7 +131,7 @@ jobs:
           echo "Kernel: $KV"
           sudo cp chroot/boot/vmlinuz-$KV iso/casper/vmlinuz
           sudo cp chroot/boot/initrd.img-$KV iso/casper/initrd
-          sudo tee iso/boot/grub/grub.cfg > /dev/null <<'EOF'
+          sudo tee iso/boot/grub/grub.cfg > /dev/null <<EOF
           insmod part_gpt
           insmod part_msdos
           insmod iso9660
@@ -137,7 +139,7 @@ jobs:
           insmod all_video
           insmod gfxterm
           insmod png
-          loadfont $prefix/fonts/unicode.pf2
+          loadfont \$prefix/fonts/unicode.pf2
           set gfxmode=auto
           terminal_output gfxterm
           background_image /boot/grub/splash.png
@@ -147,24 +149,24 @@ jobs:
           set timeout_style=hidden
           set timeout=3
           set default=0
-          menuentry "Experimentar ou Instalar o MrEzequielOS" {
+          menuentry "Experimentar ou Instalar o MrEzequielOS (build $BUILD_ID)" {
               linux /casper/vmlinuz boot=casper quiet splash locale=pt_BR.UTF-8 keyboard-layouts=br ---
               initrd /casper/initrd
           }
-          menuentry "Instalacao direta (Ubiquity)" {
+          menuentry "Instalacao direta (Ubiquity) (build $BUILD_ID)" {
               linux /casper/vmlinuz boot=casper only-ubiquity quiet splash locale=pt_BR.UTF-8 keyboard-layouts=br ---
               initrd /casper/initrd
           }
           EOF
-          sudo tee iso/boot/grub/loopback.cfg > /dev/null <<'EOF'
-          menuentry "MrEzequielOS Live" {
+          sudo tee iso/boot/grub/loopback.cfg > /dev/null <<EOF
+          menuentry "MrEzequielOS Live (build $BUILD_ID)" {
               set isofile="/boot/iso/MrEzequielOS-2.0-amd64.iso"
-              loopback loop $isofile
-              linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=$isofile quiet splash ---
+              loopback loop \$isofile
+              linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=\$isofile quiet splash ---
               initrd (loop)/casper/initrd
           }
           EOF
-          echo 'MrEzequielOS 2.0 LTS "Resolute" - Release amd64' | sudo tee iso/.disk/info > /dev/null
+          echo "MrEzequielOS 2.0 LTS \"Resolute\" - Release amd64 (build $BUILD_ID)" | sudo tee iso/.disk/info > /dev/null
           sudo cp config/branding/grub-bg.png iso/boot/grub/splash.png
           echo "=== squashfs (zstd) ==="
           sudo mksquashfs chroot iso/casper/filesystem.squashfs -comp zstd -b 1M -noappend
