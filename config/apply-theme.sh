@@ -158,7 +158,7 @@ mkdir -p /etc/systemd/system /var/lib/mrezequielos
 cp "$BASE/tools/mrezequielos-update-check.service" /etc/systemd/system/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update-check.timer" /etc/systemd/system/ 2>/dev/null || true
 systemctl enable mrezequielos-update-check.timer 2>/dev/null || true
-echo "2.0" > /etc/mrezequielos-version
+echo "2.1" > /etc/mrezequielos-version
 
 echo "[visual] App de Ajuda próprio (tudo nosso, com créditos)..."
 mkdir -p /usr/share/help/C/mrezequielos-help
@@ -194,7 +194,7 @@ cat > /etc/lsb-release <<'EOF'
 DISTRIB_ID=MrEzequielOS
 DISTRIB_RELEASE=26.04
 DISTRIB_CODENAME=resolute
-DISTRIB_DESCRIPTION="MrEzequielOS 2.0"
+DISTRIB_DESCRIPTION="MrEzequielOS 2.1"
 EOF
 cat /etc/lsb-release
 if [ -f /usr/share/applications/update-manager.desktop ]; then
@@ -219,4 +219,4 @@ if [ -f /etc/update-manager/release-upgrades ]; then
 else
   echo "AVISO release-upgrades ausente"
 fi
-echo "OK - MrEzequielOS 2.0 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."
+echo "OK - MrEzequielOS 2.1 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."
