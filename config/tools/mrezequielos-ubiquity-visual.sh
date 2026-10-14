@@ -18,12 +18,13 @@ else
   echo "[ubiquity-visual] AVISO: branding/logo.svg ausente em $BASE"
 fi
 
-# 2. Patch no .desktop do ubiquity para usar nossa logo
+# 2. Icone do .desktop: alinhado com o branding-patches.sh (Icon=ubiquity,
+# que aponta para o anaconda 512px do Zorin). Nao trocar para outro nome.
 DESKTOP_FILE="/usr/share/applications/ubiquity.desktop"
 if [ -f "$DESKTOP_FILE" ]; then
     cp "$DESKTOP_FILE" "$DESKTOP_FILE.bak"
-    sed -i 's/^Icon=.*/Icon=mrezequielos-installer/' "$DESKTOP_FILE"
-    echo "[ubiquity-visual] .desktop icon atualizado"
+    sed -i 's/^Icon=.*/Icon=ubiquity/' "$DESKTOP_FILE"
+    echo "[ubiquity-visual] .desktop icon atualizado (ubiquity)"
 fi
 
 # 3. Tela "Experimentar ou Instalar" (welcome screen do ubiquity)
