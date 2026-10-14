@@ -269,31 +269,48 @@ done
 # 8. Wrapper bwrap para o Ubiquity (causa raiz do "Bail out! Gtk" no instalador).
 # O Ubiquity baixa o UID efetivo da interface para 1000 (seteuid) mantendo o
 # UID real 0. O glycin chama o bwrap nesse estado e o bwrap aborta com
-# "Unexpected setuid user 1000, should be 0". O Ubiquity poe
-# /usr/lib/ubiquity/compat no inicio do PATH, entao este wrapper tem
-# prioridade: ele restaura o euid 0 e entrega ao bwrap real.
-echo "[patch] Instalando wrapper bwrap do Ubiquity..."
-mkdir -p /usr/lib/ubiquity/compat
-cat > /usr/lib/ubiquity/compat/bwrap << 'WRAPEOF'
-#!/usr/bin/python3
-"""Wrapper bwrap para o Ubiquity: restaura euid 0 antes do bwrap real."""
+# "Unexpected setuid user 1000, should be 0" (provado no live).
+# O wrapper do compat/ cobre chamada via PATH; o teste no live mostrou que o
+# glycin pode chamar /usr/bin/bwrap por caminho absoluto, entao o wrapper
+# tambem assume /usr/bin/bwrap via dpkg-divert (idempotente, reversivel).
+echo "[patch] Instalando wrappers bwrap do Ubiquity..."
+WRAP_PY='#!/usr/bin/python3
+"""Wrapper bwrap: restaura uid 0 quando possivel, senao repassa intacto."""
 import os
 import sys
 
-REAL_BWRAP = "/usr/bin/bwrap"
+REAL_BWRAP = "__REAL__"
 
-try:
-    os.seteuid(0)
-except OSError:
-    pass
-try:
-    os.setuid(0)
-except OSError:
-    pass
+for _fn in ("seteuid", "setuid"):
+    try:
+        getattr(os, _fn)(0)
+    except Exception:
+        pass
+
+if not os.path.exists(REAL_BWRAP):
+    sys.stderr.write("mre-bwrap: binario real ausente: %s\n" % REAL_BWRAP)
+    sys.exit(127)
 
 os.execv(REAL_BWRAP, [REAL_BWRAP] + sys.argv[1:])
-WRAPEOF
+'
+# 8a. Compat (cobre chamada via PATH; Ubiquity poe compat no inicio do PATH).
+mkdir -p /usr/lib/ubiquity/compat
+printf '%s' "$WRAP_PY" | sed 's|__REAL__|/usr/bin/bwrap|' > /usr/lib/ubiquity/compat/bwrap
 chmod +x /usr/lib/ubiquity/compat/bwrap
 echo "[patch] Wrapper bwrap instalado em /usr/lib/ubiquity/compat/bwrap"
+# 8b. Caminho absoluto (cobre chamada direta a /usr/bin/bwrap).
+if [ -f /usr/bin/bwrap ] && [ ! -f /usr/bin/bwrap.real ]; then
+  dpkg-divert --add --rename --divert /usr/bin/bwrap.real /usr/bin/bwrap 2>/dev/null || {
+    mv /usr/bin/bwrap /usr/bin/bwrap.real
+  }
+fi
+if [ -f /usr/bin/bwrap.real ]; then
+  printf '%s' "$WRAP_PY" | sed 's|__REAL__|/usr/bin/bwrap.real|' > /usr/bin/bwrap
+  chmod +x /usr/bin/bwrap
+  echo "[patch] Wrapper bwrap instalado em /usr/bin/bwrap (real em bwrap.real)"
+  /usr/bin/bwrap --version 2>/dev/null || echo "[patch] AVISO: wrapper /usr/bin/bwrap nao responde"
+else
+  echo "[patch] AVISO: sem /usr/bin/bwrap.real, mantido so o wrapper do compat/"
+fi
 
 echo "[patch] Todos os patches aplicados"
