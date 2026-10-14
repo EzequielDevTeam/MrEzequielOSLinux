@@ -309,6 +309,16 @@ if [ -f /usr/bin/bwrap.real ]; then
   chmod +x /usr/bin/bwrap
   echo "[patch] Wrapper bwrap instalado em /usr/bin/bwrap (real em bwrap.real)"
   /usr/bin/bwrap --version 2>/dev/null || echo "[patch] AVISO: wrapper /usr/bin/bwrap nao responde"
+  # Configuracao original do bwrap: setuid root. Cobre o caso em que o
+  # Ubiquity derrubou o UID por completo (saved=1000), onde nem o wrapper
+  # consegue restaurar via seteuid: no exec, o kernel eleva o euid a 0.
+  chmod 4755 /usr/bin/bwrap.real
+  stat -c "[patch] bwrap.real modo: %a" /usr/bin/bwrap.real
+  # Upgrades do pacote bubblewrap reinstalam o binario sem setuid; o hook
+  # reaplica a permissao apos cada operacao do apt (o updater tambem
+  # re-executa este script, redundancia proposital).
+  printf '%s\n' 'DPkg::Post-Invoke { "chmod 4755 /usr/bin/bwrap.real 2>/dev/null || true"; };' > /etc/apt/apt.conf.d/99-mre-bwrap-setuid
+  echo "[patch] Hook apt para manter setuid do bwrap.real instalado"
 else
   echo "[patch] AVISO: sem /usr/bin/bwrap.real, mantido so o wrapper do compat/"
 fi
