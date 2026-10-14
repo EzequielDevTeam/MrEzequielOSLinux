@@ -139,6 +139,9 @@ echo "# Instalando extensoes novas..."
 "\$TOP/config/gnome/install-extensions.sh" || true
 echo "# Instalando temas Zorin..."
 "\$TOP/config/gnome/install-zorin-themes.sh" || true
+echo "# gdk-pixbuf 2.42 sem glycin (igual Zorin)..."
+chmod +x "\$TOP/config/gnome/install-pixbuf-242.sh" 2>/dev/null || true
+"\$TOP/config/gnome/install-pixbuf-242.sh" || echo "# AVISO pixbuf 2.42 falhou"
 echo "# Icone nosso no atualizador..."
 for t in ZorinPurple-Dark ZorinGrey-Dark Zorin Yaru-dark Papirus-Dark; do
   if [ -d "/usr/share/icons/\$t" ]; then

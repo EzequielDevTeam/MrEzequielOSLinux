@@ -26,6 +26,10 @@ echo "[visual] Navegador Brave (oficial, sem snap)..."
   apt update || true
   apt install -y brave-browser 2>/dev/null || true ) || echo "AVISO Brave falhou"
 
+echo "[visual] gdk-pixbuf 2.42 sem glycin (igual Zorin: instalador nao cai no sandbox)..."
+chmod +x "$BASE/gnome/install-pixbuf-242.sh" 2>/dev/null || true
+"$BASE/gnome/install-pixbuf-242.sh" || echo "AVISO pixbuf 2.42 falhou, seguindo com o do sistema"
+
 echo "[visual] Wallpaper + logo..."
 mkdir -p /usr/share/backgrounds /usr/share/pixmaps /usr/local/bin /usr/share/applications
 cp "$BASE/branding/wallpaper.svg" /usr/share/backgrounds/mrezequielos-wallpaper.svg 2>/dev/null || true
