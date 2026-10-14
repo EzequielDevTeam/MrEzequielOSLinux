@@ -1,0 +1,22 @@
+DIAGNOSTICO BWRAP - MrEzequielOS
+==============================
+Cole o bloco abaixo no terminal do live USB.
+Ele salva tudo em /tmp/diagnostico-bwrap.txt.
+Depois mande o conteudo desse arquivo.
+
+cat > /tmp/check-bwrap.sh << 'EOF'
+#!/bin/bash
+echo "=== 1. versao e wrapper ==="
+cat /etc/mrezequielos-version
+ls -l /usr/lib/ubiquity/compat/bwrap
+echo "=== 2. qual bwrap o ubiquity executa ==="
+sudo strace -f -e trace=execve -s 200 -o /tmp/ex.txt ubiquity gtk_ui 2>/dev/null
+grep -a 'bwrap' /tmp/ex.txt | head -5
+echo "=== 3. bwrap real com euid 1000 ==="
+sudo python3 -c "import os; os.seteuid(1000); os.execvp('bwrap',['bwrap','--unshare-all','--ro-bind','/usr','/usr','/bin/true'])"; echo "rc=$?"
+echo "=== 4. nosso wrapper com euid 1000 ==="
+sudo python3 -c "import os; os.seteuid(1000); os.execv('/usr/lib/ubiquity/compat/bwrap',['bwrap','--unshare-all','--ro-bind','/usr','/usr','/bin/true'])"; echo "rc=$?"
+echo "=== FIM ==="
+EOF
+chmod +x /tmp/check-bwrap.sh
+/tmp/check-bwrap.sh 2>&1 | tee /tmp/diagnostico-bwrap.txt
