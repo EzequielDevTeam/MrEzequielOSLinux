@@ -228,21 +228,23 @@ done
 
 # 6. Resolver symlinks do image-missing.png no tema Zorin (evita bwrap crash)
 echo "[patch] Criando image-missing.png transparente nos tamanhos necessários (evita bwrap crash)..."
-for sz in 16x16 22x22 24x24 32x32 48x48; do
-    DIR="/usr/share/icons/Zorin/${sz}/status"
-    ICON="${DIR}/image-missing.png"
-    mkdir -p "$DIR"
-    # Criar PNG transparente 1x1 pixel se não existir
-    if [ ! -f "$ICON" ]; then
-        python3 -c "
+python3 << 'PYEOF'
+import os
 from gi.repository import GdkPixbuf
-pb = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, ${sz%x*}, ${sz#*x})
-pb.fill(0x00000000)
-pb.savev('${ICON}', 'png', [], [])
-print('[patch] Criado: ${ICON}')
-"
-    fi
-done
+
+sizes = [(16, 16), (22, 22), (24, 24), (32, 32), (48, 48)]
+for w, h in sizes:
+    dir_path = f"/usr/share/icons/Zorin/{w}x{h}/status"
+    icon_path = f"{dir_path}/image-missing.png"
+    os.makedirs(dir_path, exist_ok=True)
+    if not os.path.exists(icon_path):
+        pb = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, w, h)
+        pb.fill(0x00000000)
+        pb.savev(icon_path, 'png', [], [])
+        print(f"[patch] Criado: {icon_path}")
+
+print("[patch] image-missing.png criado em todos os tamanhos")
+PYEOF
 
 # 7. Regenerar cache após criar ícones
 for theme in /usr/share/icons/*/; do
