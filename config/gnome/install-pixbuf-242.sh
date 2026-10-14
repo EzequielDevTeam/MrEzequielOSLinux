@@ -40,9 +40,15 @@ echo "[pixbuf] segurando pacotes (hold)..."
 apt-mark hold $PKGS 2>/dev/null || true
 
 echo "[pixbuf] regenerando loaders.cache (legados)..."
-if command -v gdk-pixbuf-query-loaders >/dev/null; then
-  gdk-pixbuf-query-loaders --update-cache 2>/dev/null || true
-  ls -l /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache 2>/dev/null || true
+QLOAD=""
+# No 2.42 o query-loaders fica fora do PATH, dentro do dir da lib.
+for q in /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders /usr/bin/gdk-pixbuf-query-loaders; do
+  if [ -x "$q" ]; then QLOAD="$q"; break; fi
+done
+if [ -z "$QLOAD" ]; then QLOAD="$(command -v gdk-pixbuf-query-loaders 2>/dev/null || true)"; fi
+if [ -n "$QLOAD" ]; then
+  "$QLOAD" --update-cache 2>/dev/null || true
+  ls -l /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders.cache 2>/dev/null || echo "[pixbuf] AVISO: loaders.cache nao gerado"
 else
   echo "[pixbuf] AVISO: gdk-pixbuf-query-loaders ausente"
 fi
