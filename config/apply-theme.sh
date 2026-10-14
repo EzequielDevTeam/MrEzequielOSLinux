@@ -205,6 +205,11 @@ chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrez
 echo "[visual] GRUB + hostname..."
 sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="MrEzequielOS"/' /etc/default/grub 2>/dev/null || echo 'GRUB_DISTRIBUTOR="MrEzequielOS"' >> /etc/default/grub
 echo "MrEzequielOS" > /etc/hostname 2>/dev/null || true
+# Sem esta linha o live cospe "hostname: Name or service not known" e o
+# make-ssl-cert falha por nao achar FQDN.
+if ! grep -q "127.0.1.1[[:space:]].*MrEzequielOS" /etc/hosts 2>/dev/null; then
+  echo "127.0.1.1 MrEzequielOS" >> /etc/hosts 2>/dev/null || true
+fi
 update-grub 2>/dev/null || true
 
 echo "[visual] Bloqueia upgrade de base (igual Zorin: sem oferta de nova versao Ubuntu)..."

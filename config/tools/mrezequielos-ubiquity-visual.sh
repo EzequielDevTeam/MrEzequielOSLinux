@@ -6,33 +6,16 @@ set -euo pipefail
 
 echo "[ubiquity-visual] Personalizando instalador..."
 
+# Base do repo (funciona no build E no OTA; nada de caminho fixo /root/...).
+BASE="$(cd "$(dirname "$0")/.." && pwd)"
+
 # 1. Logo do MrEzequielOS na janela do Ubiquity
 # O ubiquity-frontend-gtk usa /usr/share/pixmaps/ubiquity.png ou similar
-cp /root/MrEzequielOS/config/branding/logo.svg /usr/share/pixmaps/ubiquity.svg 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/logo.svg /usr/share/pixmaps/mrezequielos-installer.svg 2>/dev/null || true
-
-# Patch no ubiquity para usar nossa logo como window icon
-UBQUITY_MAIN="/usr/lib/ubiquity/ubiquity/frontend/gtk_ui.py"
-if [ -f "$UBQUITY_MAIN" ]; then
-    cp "$UBQUITY_MAIN" "$UBQUITY_MAIN.bak"
-    python3 << 'PYEOF'
-import re
-
-with open("/usr/lib/ubiquity/ubiquity/frontend/gtk_ui.py", "r") as f:
-    content = f.read()
-
-# Procurar onde define window icon e adicionar nossa logo
-# Geralmente no __init__ do GtkUI ou similar
-old_init = "class GtkUI(GObject.Object):"
-if old_init in content:
-    # Adicionar set_icon_name no construtor se não tiver
-    pass
-
-# Método mais direto: patch no arquivo .desktop do ubiquity
-PYEOF
-    echo "[ubiquity-visual] gt_ui.py verificado"
+if [ -f "$BASE/branding/logo.svg" ]; then
+  cp "$BASE/branding/logo.svg" /usr/share/pixmaps/ubiquity.svg 2>/dev/null || true
+  cp "$BASE/branding/logo.svg" /usr/share/pixmaps/mrezequielos-installer.svg 2>/dev/null || true
 else
-    echo "[ubiquity-visual] AVISO: $UBQUITY_MAIN não encontrado"
+  echo "[ubiquity-visual] AVISO: branding/logo.svg ausente em $BASE"
 fi
 
 # 2. Patch no .desktop do ubiquity para usar nossa logo
@@ -48,10 +31,10 @@ fi
 WELCOME_UI="/usr/share/ubiquity/gtk/welcome.ui"
 if [ -f "$WELCOME_UI" ]; then
     cp "$WELCOME_UI" "$WELCOME_UI.bak"
-    # Substituir textos e logo no arquivo Glade
-    sed -i 's/Ubuntu/MrEzequielOS/g' "$WELCOME_UI"
+    # Seds cirurgicos: nunca trocar "Ubuntu" puro (quebra ids internos do Glade).
     sed -i 's/Try or Install/Experimentar ou Instalar/g' "$WELCOME_UI"
-    sed -i 's/Install MrEzequielOS/Instalar MrEzequielOS/g' "$WELCOME_UI"
+    sed -i 's/Install Ubuntu/Instalar o MrEzequielOS/g' "$WELCOME_UI"
+    sed -i 's/>Ubuntu</>MrEzequielOS</g' "$WELCOME_UI"
     echo "[ubiquity-visual] welcome.ui textos atualizados"
 fi
 
@@ -59,15 +42,16 @@ fi
 SLIDESHOW_DIR="/usr/share/ubiquity-slideshow/mrezequielos"
 mkdir -p "$SLIDESHOW_DIR/screenshots"
 
-# Copiar nosso wallpaper como background dos slides
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/welcome.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/office.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/browse.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/accessibility.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/music.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/photos.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/gethelp.png" 2>/dev/null || true
-cp /root/MrEzequielOS/config/branding/wallpaper.svg "$SLIDESHOW_DIR/screenshots/usc.png" 2>/dev/null || true
+# Copiar nosso wallpaper como background dos slides.
+# Mantem .svg (original) e copia .png (mesmo conteudo) para as referencias antigas continuarem validas.
+if [ -f "$BASE/branding/wallpaper.svg" ]; then
+  for s in welcome office browse accessibility music photos gethelp usc; do
+    cp "$BASE/branding/wallpaper.svg" "$SLIDESHOW_DIR/screenshots/$s.svg" 2>/dev/null || true
+    cp "$BASE/branding/wallpaper.svg" "$SLIDESHOW_DIR/screenshots/$s.png" 2>/dev/null || true
+  done
+else
+  echo "[ubiquity-visual] AVISO: branding/wallpaper.svg ausente em $BASE"
+fi
 
 # Gerar slideshow HTML personalizado
 cat > "$SLIDESHOW_DIR/slideshow.css" << 'CSSEOF'
@@ -137,33 +121,39 @@ HTMLEOF
 
 # Copiar e adaptar slides do config
 for slide in welcome browse office accessibility music photos gethelp usc; do
-    src="/root/MrEzequielOS/config/slideshow/${slide}.html"
+    src="$BASE/slideshow/${slide}.html"
     dst="$SLIDESHOW_DIR/${slide}.html"
     if [ -f "$src" ]; then
         cp "$src" "$dst"
-        # Ajustar referências de imagem
-        sed -i 's|screenshots/|screenshots/|g' "$dst"
+    else
+        echo "[ubiquity-visual] AVISO: slide ausente $src"
     fi
 done
 
-# 5. Configurar ubiquity para usar nosso slideshow
+# 5. Configurar ubiquity para usar nosso slideshow.
+# Nao ha certeza de que o ubiquity leia /etc/ubiquity-slideshow.conf, entao
+# espelhamos os slides tambem no diretorio padrao do pacote (com backup).
 UBIQUITY_SLIDESHOW_CONF="/etc/ubiquity-slideshow.conf"
 echo "slideshow=mrezequielos" > "$UBIQUITY_SLIDESHOW_CONF"
+for std_dir in /usr/share/ubiquity-slideshow/ubuntu /usr/share/ubiquity-slideshow/kubuntu; do
+    if [ -d "$std_dir" ] && [ "$std_dir" != "$SLIDESHOW_DIR" ]; then
+        for f in "$SLIDESHOW_DIR"/*.html "$SLIDESHOW_DIR"/*.css; do
+            [ -f "$f" ] || continue
+            b="$(basename "$f")"
+            [ -f "$std_dir/$b" ] && [ ! -f "$std_dir/$b.mre-bak" ] && cp "$std_dir/$b" "$std_dir/$b.mre-bak" 2>/dev/null || true
+            cp "$f" "$std_dir/$b" 2>/dev/null || true
+        done
+        mkdir -p "$std_dir/screenshots"
+        for s in "$SLIDESHOW_DIR/screenshots"/*; do
+            [ -f "$s" ] || continue
+            cp "$s" "$std_dir/screenshots/$(basename "$s")" 2>/dev/null || true
+        done
+        echo "[ubiquity-visual] slides espelhados em $std_dir"
+    fi
+done
 
-# 6. Patch no ubiquity frontend para setar window icon na inicialização
-# Criar um wrapper que roda antes do ubiquity
-cat > /usr/local/bin/mrezequielos-ubiquity-wrapper << 'WRAPEOF'
-#!/bin/bash
-# Wrapper para definir icon da janela do ubiquity
-export GTK_WINDOW_ICON=/usr/share/pixmaps/mrezequielos-installer.svg
-exec ubiquity gtk_ui "$@"
-WRAPEOF
-chmod +x /usr/local/bin/mrezequielos-ubiquity-wrapper
-
-# Atualizar .desktop para usar wrapper
-if [ -f "$DESKTOP_FILE" ]; then
-    sed -i 's|^Exec=.*|Exec=mrezequielos-ubiquity-wrapper|' "$DESKTOP_FILE"
-fi
+# 6. Icone da janela: o branding-patches.sh ja define Icon=ubiquity (anaconda
+# 512px do Zorin). Nada de GTK_WINDOW_ICON (variavel inexistente).
 
 # 7. Melhorar aparência dos apps no slideshow - adicionar Brave, Firefox, etc.
 cat > "$SLIDESHOW_DIR/browse.html" << 'HTMLEOF'

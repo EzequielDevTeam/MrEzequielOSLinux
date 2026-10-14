@@ -38,12 +38,17 @@ priv_script() {
 #!/bin/bash
 export DEBIAN_FRONTEND=noninteractive
 LOG=/var/log/mrezequielos-update.log
-exec > >(tee -a "$LOG") 2>&1
+exec > >(tee -a "\$LOG") 2>&1
 REPO="$REPO"
 TAG="$TAG"
 VER_FILE="$VER_FILE"
+if grep -q "boot=casper" /proc/cmdline 2>/dev/null || grep -q " casper" /proc/cmdline 2>/dev/null; then
+  echo "FALHA-LIVE: no modo live use o Instalador, nao o atualizador."
+  exit 1
+fi
 TMPD=\$(mktemp -d)
 echo "# Baixando MrEzequielOS \$TAG..."
+# TODO: verificar assinatura/checksum do tarball (hoje confia no HTTPS do GitHub).
 curl -sL --retry 2 --max-time 180 -o "\$TMPD/sys.tar.gz" "https://github.com/\$REPO/archive/refs/tags/v\$TAG.tar.gz" || { echo "FALHA-DOWNLOAD"; rm -rf "\$TMPD"; exit 1; }
 echo "# Abrindo pacote..."
 tar xzf "\$TMPD/sys.tar.gz" -C "\$TMPD" || { echo "FALHA-TAR"; rm -rf "\$TMPD"; exit 1; }
@@ -98,11 +103,7 @@ cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos.svg 2>/dev/n
 cp "\$TOP/config/branding/logo.svg" /usr/share/pixmaps/mrezequielos-logo.svg 2>/dev/null || true
 cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
 for l in windows mac ubuntu; do
-  cp "\$TOP/config/branding/layout-$l.svg" "/usr/share/pixmaps/mrezequielos-layout-$l.svg" 2>/dev/null || true
-done
-cp "\$TOP/config/branding/start-button.svg" /usr/share/pixmaps/mrezequielos-start.svg 2>/dev/null || true
-for l in windows mac ubuntu; do
-  cp "\$TOP/config/branding/layout-$l.svg" "/usr/share/pixmaps/mrezequielos-layout-$l.svg" 2>/dev/null || true
+  cp "\$TOP/config/branding/layout-\$l.svg" "/usr/share/pixmaps/mrezequielos-layout-\$l.svg" 2>/dev/null || true
 done
 cp "\$TOP/config/branding/os-release" /etc/os-release 2>/dev/null || true
 mkdir -p /usr/share/doc/mrezequielos
@@ -155,9 +156,9 @@ echo "# Visual do Ubiquity (logo, welcome, slideshow)..."
 echo "# Verificando o novo..."
 THEME_OK=1
 for d in /usr/share/themes/ZorinPurple-Dark /usr/share/icons/ZorinPurple-Dark; do
-  if [ -d "$d" ]; then echo "# tema OK: $d"; else echo "# tema FALTA: $d"; THEME_OK=0; fi
+  if [ -d "\$d" ]; then echo "# tema OK: \$d"; else echo "# tema FALTA: \$d"; THEME_OK=0; fi
 done
-if mre_verify_required "\$TOP/config/required-extensions.txt" && [ "$THEME_OK" = "1" ]; then
+if mre_verify_required "\$TOP/config/required-extensions.txt" && [ "\$THEME_OK" = "1" ]; then
   echo "# Limpando modulos obsoletos..."
   mre_purge_obsolete "\$TOP/config/obsolete-extensions.txt"
   echo "# Resetando configs velhas (usuarios logados)..."
@@ -174,8 +175,11 @@ fi
 sed -i '/cdrom:/d' /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
 echo "# Atualizando pacotes Ubuntu (demora)..."
 apt update && apt full-upgrade -y || { echo "FALHA-APT"; rm -rf "\$TMPD"; exit 1; }
-echo "# Reinstalando base (auto-reparo)..."
-grep -vE '^[[:space:]]*(#|$)' "\$TOP/config/core-packages.txt" | tr '\n' ' ' | xargs apt install -y 2>/dev/null || echo "# AVISO base parcial"
+echo "# Reinstalando base (auto-reparo, um por um para um nome errado nao abortar tudo)..."
+while IFS= read -r pkg || [ -n "\$pkg" ]; do
+  case "\$pkg" in ''|\#*) continue ;; esac
+  apt install -y "\$pkg" 2>/dev/null || echo "# AVISO pacote falhou: \$pkg"
+done < "\$TOP/config/core-packages.txt"
 echo "# Removendo ajuda Ubuntu (fica só a nossa)..."
 apt purge -y gnome-user-docs ubuntu-docs 2>/dev/null || true
 for p in gnome-shell gdm3 gnome-session yelp; do dpkg -s \$p >/dev/null 2>&1 || apt install -y \$p; done
@@ -189,7 +193,9 @@ EOF
 run_priv() {
   local TAG="$1"
   local SCR
+  umask 077
   SCR=$(mktemp /tmp/mre-apply-XXXXXX.sh)
+  chmod 600 "$SCR"
   priv_script "$TAG" "$SCR"
   local RC=0
   if [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; then
@@ -249,7 +255,9 @@ case "$1" in
   --do-apply)
     shift; TAG="$1"
     [ -z "$TAG" ] && { echo "FALHA: sem versao"; exit 1; }
+    umask 077
     SCR=$(mktemp /tmp/mre-apply-XXXXXX.sh)
+    chmod 600 "$SCR"
     priv_script "$TAG" "$SCR"
     bash "$SCR"; RC=$?
     rm -f "$SCR"
@@ -273,6 +281,7 @@ esac
 
 if ! command -v zenity >/dev/null || { [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]; }; then
   echo "Versão atual: $CUR (modo texto)"
+  if grep -q "boot=casper" /proc/cmdline 2>/dev/null; then echo "Modo live: use o Instalador."; exit 1; fi
   sudo apt update && sudo apt full-upgrade -y
   exit $?
 fi

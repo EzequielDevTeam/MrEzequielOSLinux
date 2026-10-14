@@ -78,6 +78,7 @@ jobs:
           lsinitramfs /boot/initrd.img-* 2>/dev/null | grep -i "plymouth.*\(spinner\|ubuntu-logo\)" | head -5 || true
           echo "=== [6/7] branding ==="
           echo "MrEzequielOS" > /etc/hostname
+          grep -q "127.0.1.1[[:space:]].*MrEzequielOS" /etc/hosts 2>/dev/null || echo "127.0.1.1 MrEzequielOS" >> /etc/hosts
           locale-gen pt_BR.UTF-8 2>/dev/null || true
           update-locale LANG=pt_BR.UTF-8 LANGUAGE=pt_BR:pt:en 2>/dev/null || true
           cp /tmp/mre-config/branding/os-release /etc/os-release

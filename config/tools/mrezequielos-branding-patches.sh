@@ -32,7 +32,11 @@ new_flavor_name = '''def get_ubuntu_flavor_name(cache=None):
     """Retorna nome do nosso flavor"""
     return "MrEzequielOS"'''
 
-content = content.replace(old_flavor_name, new_flavor_name)
+if old_flavor_name in content:
+    content = content.replace(old_flavor_name, new_flavor_name)
+    print("update-manager utils.py patchado (flavor_name)")
+else:
+    print("update-manager utils.py AVISO: padrao flavor_name nao casou, pulando")
 
 # Substituir get_ubuntu_flavor
 old_flavor = '''def get_ubuntu_flavor(cache=None):
@@ -47,12 +51,15 @@ new_flavor = '''def get_ubuntu_flavor(cache=None):
     """Retorna flavor do nosso distro"""
     return "mrezequielos"'''
 
-content = content.replace(old_flavor, new_flavor)
+if old_flavor in content:
+    content = content.replace(old_flavor, new_flavor)
+    print("update-manager utils.py patchado (flavor)")
+else:
+    print("update-manager utils.py AVISO: padrao flavor nao casou, pulando")
 
 with open("/usr/lib/python3/dist-packages/UpdateManager/Core/utils.py", "w") as f:
     f.write(content)
 
-print("update-manager utils.py patchado")
 PYEOF
 else
     echo "[patch] AVISO: $UTILS_PY não encontrado"
@@ -73,12 +80,15 @@ new = """        try:
             self.state = 0
             self.skip = True"""
 
-content = content.replace(old, new)
+if old in content:
+    content = content.replace(old, new)
+    print("ubiquity ubi-wireless.py patchado")
+else:
+    print("ubiquity ubi-wireless.py AVISO: padrao nao casou, pulando")
 
 with open("/usr/lib/ubiquity/plugins/ubi-wireless.py", "w") as f:
     f.write(content)
 
-print("ubiquity ubi-wireless.py patchado")
 PYEOF
 else
     echo "[patch] AVISO: $UBI_WIRELESS não encontrado"
@@ -109,13 +119,13 @@ content = content.replace(old_get_state, new_get_state)
 
 # 3b. SUBSTITUIR configure_icons INTEIRO por versão robusta (SEM load_icon image-missing)
 new_configure = '''    def configure_icons(self):
-        it = Gtk.IconTheme()
-        # NÃO carregar "image-missing" do tema - cria pixbuf vazio em memória
-        # Evita sandbox bwrap + glycin-image-rs crash
+        # Usa o tema atual (ubuntu-mono-light nao existe no 26.04).
+        # O pixbuf padrao e criado em memoria: nunca chama
+        # load_icon("image-missing") para nao depender do sandbox bwrap/glycin.
         from gi.repository import GdkPixbuf
         default = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 22, 22)
         default.fill(0x00000000)
-        it.set_custom_theme('ubuntu-mono-light')
+        it = Gtk.IconTheme.get_default()
         self.icons = []
         for n in ['nm-signal-00',
                   'nm-signal-25',
@@ -237,6 +247,9 @@ for w, h in sizes:
     dir_path = f"/usr/share/icons/Zorin/{w}x{h}/status"
     icon_path = f"{dir_path}/image-missing.png"
     os.makedirs(dir_path, exist_ok=True)
+    # lexists: symlink quebrado tambem conta (exists retorna False nele).
+    if os.path.islink(icon_path):
+        os.unlink(icon_path)
     if not os.path.exists(icon_path):
         pb = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, w, h)
         pb.fill(0x00000000)
@@ -252,5 +265,35 @@ for theme in /usr/share/icons/*/; do
         gtk-update-icon-cache -f "$theme" 2>/dev/null || true
     fi
 done
+
+# 8. Wrapper bwrap para o Ubiquity (causa raiz do "Bail out! Gtk" no instalador).
+# O Ubiquity baixa o UID efetivo da interface para 1000 (seteuid) mantendo o
+# UID real 0. O glycin chama o bwrap nesse estado e o bwrap aborta com
+# "Unexpected setuid user 1000, should be 0". O Ubiquity poe
+# /usr/lib/ubiquity/compat no inicio do PATH, entao este wrapper tem
+# prioridade: ele restaura o euid 0 e entrega ao bwrap real.
+echo "[patch] Instalando wrapper bwrap do Ubiquity..."
+mkdir -p /usr/lib/ubiquity/compat
+cat > /usr/lib/ubiquity/compat/bwrap << 'WRAPEOF'
+#!/usr/bin/python3
+"""Wrapper bwrap para o Ubiquity: restaura euid 0 antes do bwrap real."""
+import os
+import sys
+
+REAL_BWRAP = "/usr/bin/bwrap"
+
+try:
+    os.seteuid(0)
+except OSError:
+    pass
+try:
+    os.setuid(0)
+except OSError:
+    pass
+
+os.execv(REAL_BWRAP, [REAL_BWRAP] + sys.argv[1:])
+WRAPEOF
+chmod +x /usr/lib/ubiquity/compat/bwrap
+echo "[patch] Wrapper bwrap instalado em /usr/lib/ubiquity/compat/bwrap"
 
 echo "[patch] Todos os patches aplicados"

@@ -203,10 +203,22 @@ class AppearanceApp(Adw.Application):
         self.win.present()
 
 
-def toast_page(parent, title):
-    dlg = Adw.MessageDialog.new(parent, title, 'Aplicado. Reinicie o computador para valer tudo.')
-    dlg.add_response('ok', 'OK')
-    dlg.present()
+def toast_page(parent, title, ok=True):
+    if ok:
+        msg = 'Aplicado. Reinicie o computador para valer tudo.'
+    else:
+        msg = 'Falhou. Abra o app Diagnóstico e veja os detalhes.'
+    try:
+        dlg = Adw.AlertDialog.new(title, msg)
+        dlg.add_response('ok', 'OK')
+        dlg.present(parent)
+    except Exception:
+        try:
+            dlg = Adw.MessageDialog.new(parent, title, msg)
+            dlg.add_response('ok', 'OK')
+            dlg.present()
+        except Exception:
+            pass
 
 
 class AppearanceWindow(Adw.ApplicationWindow):
@@ -269,7 +281,15 @@ class AppearanceWindow(Adw.ApplicationWindow):
         row.set_subtitle(sub)
         btn = Gtk.Button.new_with_label('Aplicar')
         btn.add_css_class('suggested-action')
-        btn.connect('clicked', lambda b: (callback(), toast_page(self, title)))
+
+        def _run(_b):
+            try:
+                ok = callback()
+            except Exception:
+                ok = False
+            toast_page(self, title, ok=(ok is not False))
+
+        btn.connect('clicked', _run)
         row.add_suffix(btn)
         group.add(row)
 

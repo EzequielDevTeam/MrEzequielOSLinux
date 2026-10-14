@@ -27,6 +27,11 @@ echo "--- schemas das extensoes (compilados?) ---"
 for u in arcmenu@arcmenu.com zorin-taskbar@zorinos.com ding@rastersoft.com blur-my-shell@aunetx; do
   if [ -f "/usr/share/gnome-shell/extensions/$u/schemas/gschemas.compiled" ]; then echo "OK $u"; else echo "FALTA schema $u"; fi
 done
+echo "--- disco e memoria (live usa /cow em RAM) ---"
+df -h / /tmp 2>&1
+free -m 2>&1
+echo "--- glycin/bwrap (causa do Bail out! no instalador) ---"
+journalctl -b --no-pager 2>/dev/null | grep -ai "glycin\|bwrap\|setuid" | tail -15
 echo "--- ubiquity abre? ---"
 timeout 10 ubiquity --help >/dev/null 2>&1 && echo "ubiquity --help OK" || echo "ubiquity --help FALHOU"
 echo "--- erros das extensões (sessão atual) ---"
