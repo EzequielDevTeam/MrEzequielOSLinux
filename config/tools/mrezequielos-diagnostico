@@ -30,6 +30,22 @@ done
 echo "--- disco e memoria (live usa /cow em RAM) ---"
 df -h / /tmp 2>&1
 free -m 2>&1
+echo "--- boot / grub (2.2) ---"
+systemd-analyze 2>&1 | head -2
+systemd-analyze blame 2>/dev/null | head -6
+grep -E "^(GRUB_DEFAULT|GRUB_TIMEOUT|GRUB_TIMEOUT_STYLE|GRUB_DISABLE_OS_PROBER|GRUB_RECORDFAIL_TIMEOUT|GRUB_DISTRIBUTOR)=" /etc/default/grub 2>&1
+ls -l /etc/grub.d/99_mrezequielos 2>&1
+grep -E "^menuentry" /boot/grub/grub.cfg 2>/dev/null | head -8
+grub-editenv list 2>&1
+if command -v efibootmgr >/dev/null 2>&1; then efibootmgr 2>&1 | head -10; fi
+echo "--- zram / swap ---"
+zramctl 2>&1 | head -4
+swapon --show 2>&1
+printf "swappiness="; cat /proc/sys/vm/swappiness 2>&1
+echo "--- servicos de boot ---"
+systemctl is-enabled NetworkManager-wait-online.service 2>&1
+systemctl is-active zramswap.service 2>&1
+systemctl is-enabled fstrim.timer 2>&1
 echo "--- glycin/bwrap (causa do Bail out! no instalador) ---"
 journalctl -b --no-pager 2>/dev/null | grep -ai "glycin\|bwrap\|setuid" | tail -15
 echo "--- ubiquity abre? ---"

@@ -14,6 +14,7 @@ no canto e seus apps no meio.</p>
   <list>
     <item><p><link xref="layouts">Trocar o layout (Windows, macOS, Ubuntu)</link></p></item>
     <item><p><link xref="instalar">Instalar o sistema no computador</link></p></item>
+    <item><p><link xref="boot">Inicialização direta e menu do GRUB</link></p></item>
     <item><p><link xref="atualizacoes">Atualizar sistema e aplicativos</link></p></item>
     <item><p><link xref="idioma">Idioma e teclado</link></p></item>
     <item><p><link xref="seguranca">Segurança</link></p></item>

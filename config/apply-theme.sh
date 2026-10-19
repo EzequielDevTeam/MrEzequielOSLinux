@@ -136,7 +136,9 @@ chmod +x "$BASE/tools/"* 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update" /usr/local/bin/mrezequielos-update
 cp "$BASE/tools/mrezequielos-security" /usr/local/bin/mrezequielos-security
 cp "$BASE/tools/mrezequielos-diagnostico" /usr/local/bin/mrezequielos-diagnostico
-chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico
+cp "$BASE/tools/mrezequielos-boot.sh" /usr/local/bin/mrezequielos-boot
+cp "$BASE/tools/mrezequielos-tweaks.sh" /usr/local/bin/mrezequielos-tweaks
+chmod +x /usr/local/bin/mrezequielos-update /usr/local/bin/mrezequielos-security /usr/local/bin/mrezequielos-diagnostico /usr/local/bin/mrezequielos-boot /usr/local/bin/mrezequielos-tweaks
 cp "$BASE/tools/mrezequielos-update.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-security.desktop" /usr/share/applications/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-diagnostico.desktop" /usr/share/applications/ 2>/dev/null || true
@@ -162,7 +164,7 @@ mkdir -p /etc/systemd/system /var/lib/mrezequielos
 cp "$BASE/tools/mrezequielos-update-check.service" /etc/systemd/system/ 2>/dev/null || true
 cp "$BASE/tools/mrezequielos-update-check.timer" /etc/systemd/system/ 2>/dev/null || true
 systemctl enable mrezequielos-update-check.timer 2>/dev/null || true
-echo "2.1" > /etc/mrezequielos-version
+echo "2.2" > /etc/mrezequielos-version
 
 echo "[visual] App de Ajuda próprio (tudo nosso, com créditos)..."
 mkdir -p /usr/share/help/C/mrezequielos-help
@@ -198,7 +200,7 @@ cat > /etc/lsb-release <<'EOF'
 DISTRIB_ID=MrEzequielOS
 DISTRIB_RELEASE=26.04
 DISTRIB_CODENAME=resolute
-DISTRIB_DESCRIPTION="MrEzequielOS 2.1"
+DISTRIB_DESCRIPTION="MrEzequielOS 2.2"
 EOF
 cat /etc/lsb-release
 if [ -f /usr/share/applications/update-manager.desktop ]; then
@@ -207,14 +209,15 @@ fi
 chmod 644 /usr/share/applications/mrezequielos-*.desktop /etc/xdg/autostart/mrezequielos-*.desktop 2>/dev/null || true
 
 echo "[visual] GRUB + hostname..."
-sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="MrEzequielOS"/' /etc/default/grub 2>/dev/null || echo 'GRUB_DISTRIBUTOR="MrEzequielOS"' >> /etc/default/grub
+# Boot direto: oculta o menu e ignora macOS/Windows que o instalador achou.
+chmod +x "$BASE/tools/mrezequielos-boot.sh" 2>/dev/null || true
+"$BASE/tools/mrezequielos-boot.sh" || echo "AVISO GRUB boot direto falhou"
 echo "MrEzequielOS" > /etc/hostname 2>/dev/null || true
 # Sem esta linha o live cospe "hostname: Name or service not known" e o
 # make-ssl-cert falha por nao achar FQDN.
 if ! grep -q "127.0.1.1[[:space:]].*MrEzequielOS" /etc/hosts 2>/dev/null; then
   echo "127.0.1.1 MrEzequielOS" >> /etc/hosts 2>/dev/null || true
 fi
-update-grub 2>/dev/null || true
 
 echo "[visual] Bloqueia upgrade de base (igual Zorin: sem oferta de nova versao Ubuntu)..."
 if [ -f /etc/update-manager/release-upgrades ]; then
@@ -223,4 +226,7 @@ if [ -f /etc/update-manager/release-upgrades ]; then
 else
   echo "AVISO release-upgrades ausente"
 fi
-echo "OK - MrEzequielOS 2.1 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."
+echo "[visual] Desempenho + manutencao (2.2)..."
+chmod +x "$BASE/tools/mrezequielos-tweaks.sh" 2>/dev/null || true
+"$BASE/tools/mrezequielos-tweaks.sh" || echo "AVISO tweaks de desempenho falharam"
+echo "OK - MrEzequielOS 2.2 estilo Zorin aplicado. Layout padrão: Windows (taskbar embaixo + menu iniciar)."

@@ -1,0 +1,19 @@
+<page xmlns="http://projectmallard.org/1.0/" type="topic" id="boot">
+<info>
+  <title>Inicialização direta</title>
+  <desc>O sistema inicia sozinho, sem menu, e como abrir o menu quando precisar.</desc>
+  <link type="guide" xref="index"/>
+</info>
+<title>Inicialização</title>
+<section id="direto"><title>Boot direto</title>
+<p>O MrEzequielOS inicia direto no sistema. O menu do GRUB fica oculto e não
+lista macOS, Windows ou outras instalações que o instalador tenha detectado.</p>
+</section>
+<section id="menu"><title>Ver o menu</title>
+<p>Segure <key>Esc</key> (ou <key>Shift</key> em computadores mais antigos)
+durante a inicialização para abrir o menu uma vez.</p>
+<p>Para mostrar o menu sempre, abra o terminal e rode
+<cmd>sudo mrezequielos-boot --menu</cmd>. Para voltar ao boot direto, rode
+<cmd>sudo mrezequielos-boot</cmd>.</p>
+</section>
+</page>

@@ -91,6 +91,8 @@ jobs:
           bash -n config/tools/mre-apply-lib.sh
           bash -n config/gnome/install-extensions.sh
           bash -n config/gnome/install-pixbuf-242.sh
+          bash -n config/tools/mrezequielos-boot.sh
+          bash -n config/tools/mrezequielos-tweaks.sh
           bash -n config/apply-theme.sh
           python3 -m py_compile config/tools/mrezequielos-appearance-gtk.py
           for f in config/apply-theme.sh config/tools/mrezequielos-update; do
